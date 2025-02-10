@@ -35,7 +35,7 @@ const AddPatientModal = ({ isOpen, onClose }) => {
     }
 
     try {
-      const url = "http://localhost:8081/auth/newpatient"; // Replace with your actual backend URL
+      const url = "http://localhost:8081/api/newpatient"; // Replace with your actual backend URL
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -161,18 +161,7 @@ const AddPatientModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Save Template */}
-          <div className="form-group">
-            <label htmlFor="template">Save Template</label>
-            <input
-              type="text"
-              id="template"
-              name="template"
-              placeholder="Enter Template Name"
-              value={formData.template || ""}
-              onChange={handleInputChange}
-            />
-          </div>
+         
 
           {/* Preferred Language */}
           {/* <div className="form-group">

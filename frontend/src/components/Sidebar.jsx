@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback} from "react";
 import { Link } from "react-router-dom";
 import signoutButton from "../assets/images/signout_button.png";
 import addPatientIcon from "../assets/images/add.png";
@@ -12,40 +12,38 @@ import searchIcon from "../assets/images/search.png";
 import saveIcon from "../assets/images/save.png";
 import "./Sidebar.css";
 import PropTypes from "prop-types";
+import PatientsList from "./New patient/testing/index";
 
 const Sidebar = ({ onAddClick }) => {
   const [activeSection, setActiveSection] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [patients, setPatients] = useState([]);
-  const [error, setError] = useState(null);
+  // const [patients, setPatients] = useState([]);
+  // const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Fetch the patients from your API
-    fetch('/api/patients')
-      .then(response => {
-        console.log('Response:', response);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Data:', data);
-        setPatients(data);
-      })
-      .catch(error => {
-        console.error('Error fetching patients:', error);
-        setError(error.toString());
-      });
-  }, []);
+  // useEffect(() => {
+  //   fetch("/api/patients")
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! Status: ${response.status}`);
+  //       }
+  //       return response.json(); // Ensure JSON response
+  //     })
+  //     .then((data) => {
+  //       console.log("Received JSON:", data);
+  //       setPatients(data); // Store JSON directly in state
+  //     })
+  //     .catch((error) => {
+  //       setError(error.message);
+  //     });
+  // }, []);
 
   const menuItems = [
     { id: "Add patient", label: "Add patient", icon: addPatientIcon },
     { id: "Add Bills", label: "Add Bills", icon: addBillIcon },
     { id: "patients", label: "Patients", icon: patientsIcon },
     { id: "reports", label: "Reports", icon: reportsIcon },
-    { id: "saveTemplate", label: "Save Template", icon: saveIcon }, 
+    { id: "saveTemplate", label: "Save Template", icon: saveIcon },
     { id: "settings", label: "Settings", icon: settingsIcon },
   ];
 
@@ -71,15 +69,13 @@ const Sidebar = ({ onAddClick }) => {
     setSearchTerm(e.target.value);
   }, []);
 
-  const filteredPatients = patients
-    .filter((patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  // const filteredPatients = patients.filter((patient) =>
+  //   patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
-  const filteredTemplates = templatesData
-    .filter((template) =>
-      template.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const filteredTemplates = templatesData.filter((template) =>
+    template.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -133,11 +129,15 @@ const Sidebar = ({ onAddClick }) => {
                 title={isCollapsed ? item.label : ""}
               >
                 <Link to={`/${item.id}`} className="menu-link">
-                  <img 
-                    src={item.icon} 
-                    alt={item.label} 
-                    className="menu-icon" 
-                    style={item.id === "saveTemplate" ? { height: "25px", width: "25px" } : {}}
+                  <img
+                    src={item.icon}
+                    alt={item.label}
+                    className="menu-icon"
+                    style={
+                      item.id === "saveTemplate"
+                        ? { height: "25px", width: "25px" }
+                        : {}
+                    }
                   />
                   {!isCollapsed && (
                     <span className="menu-label">{item.label}</span>
@@ -184,6 +184,9 @@ const Sidebar = ({ onAddClick }) => {
           </div>
 
           <div className="patients-list">
+            <PatientsList />
+          </div>
+          {/* <div className="patients-list">
             {error ? (
               <div className="error-message">{error}</div>
             ) : filteredPatients.length === 0 ? (
@@ -195,12 +198,14 @@ const Sidebar = ({ onAddClick }) => {
                     {index + 1}. {patient.name}
                   </h4>
                   <p>
-                    <small>Created At: {new Date(patient.createdAt).toLocaleString()}</small>
+                    <small>
+                      Created At: {new Date(patient.createdAt).toLocaleString()}
+                    </small>
                   </p>
                 </div>
               ))
             )}
-          </div>
+          </div> */}
         </aside>
       )}
 
@@ -241,7 +246,7 @@ const Sidebar = ({ onAddClick }) => {
 };
 
 Sidebar.propTypes = {
-  onAddClick: PropTypes.func.isRequired,                           
+  onAddClick: PropTypes.func.isRequired,
 };
 
 export default Sidebar;
