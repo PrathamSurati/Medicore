@@ -1,0 +1,224 @@
+{
+  "medicine": [
+    {
+      "Paracetamol": {
+        "dose": "500mg",
+        "when": "1-0-1",
+        "frequency": "Every 6 hours",
+        "duration": "3 days",
+        "Qty": "12",
+        "Note": "Take with food to avoid stomach upset"
+      }
+    },
+    {
+      "Amoxicillin": {
+        "dose": "250mg",
+        "when": "1-0-1",
+        "frequency": "Every 8 hours",
+        "duration": "7 days",
+        "Qty": "21",
+        "Note": "Complete the full course even if you feel better"
+      }
+    },
+    {
+      "Ibuprofen": {
+        "dose": "200mg",
+        "when": "1-0-1",
+        "frequency": "Every 4-6 hours",
+        "duration": "5 days",
+        "Qty": "20",
+        "Note": "Do not exceed 6 doses in 24 hours"
+      }
+    },
+    {
+      "Cetirizine": {
+        "dose": "10mg",
+        "when": "1-0-0",
+        "frequency": "Once daily",
+        "duration": "5 days",
+        "Qty": "5",
+        "Note": "Take at the same time each day"
+      }
+    },
+    {
+      "Metformin": {
+        "dose": "500mg",
+        "when": "1-0-1",
+        "frequency": "Twice daily",
+        "duration": "Ongoing",
+        "Qty": "60",
+        "Note": "Monitor blood sugar levels regularly"
+      }
+    },
+    {
+      "Amlodipine": {
+        "dose": "5mg",
+        "when": "1-0-0",
+        "frequency": "Once daily",
+        "duration": "Ongoing",
+        "Qty": "30",
+        "Note": "May cause dizziness, stand up slowly"
+      }
+    },
+    {
+      "Lisinopril": {
+        "dose": "10mg",
+        "when": "1-0-0",
+        "frequency": "Once daily",
+        "duration": "Ongoing",
+        "Qty": "30",
+        "Note": "Take at the same time every day"
+      }
+    },
+    {
+      "Losartan": {
+        "dose": "50mg",
+        "when": "1-0-0",
+        "frequency": "Once daily",
+        "duration": "Ongoing",
+        "Qty": "30",
+        "Note": "Monitor kidney function regularly"
+      }
+    },
+    {
+      "Simvastatin": {
+        "dose": "20mg",
+        "when": "0-0-1",
+        "frequency": "Once daily",
+        "duration": "Ongoing",
+        "Qty": "30",
+        "Note": "Avoid grapefruit while taking this medication"
+      }
+    },
+    {
+      "Omeprazole": {
+        "dose": "20mg",
+        "when": "1-0-0",
+        "frequency": "Once daily",
+        "duration": "7 days",
+        "Qty": "7",
+        "Note": "Take on an empty stomach"
+      }
+    },
+    {
+      "Lorazepam": {
+        "dose": "1mg",
+        "when": "0-0-1",
+        "frequency": "Once or twice daily",
+        "duration": "5 days",
+        "Qty": "10",
+        "Note": "Use caution when operating machinery"
+      }
+    },
+    {
+      "Hydrochlorothiazide": {
+        "dose": "25mg",
+        "when": "1-0-0",
+        "frequency": "Once daily",
+        "duration": "Ongoing",
+        "Qty": "30",
+        "Note": "May increase urination"
+      }
+    },
+    {
+      "Prednisone": {
+        "dose": "20mg",
+        "when": "1-0-1",
+        "frequency": "Once daily",
+        "duration": "5 days",
+        "Qty": "20",
+        "Note": "Take with food to avoid stomach irritation"
+      }
+    },
+    {
+      "Clonazepam": {
+        "dose": "0.5mg",
+        "when": "1-0-0",
+        "frequency": "Once or twice daily",
+        "duration": "Ongoing",
+        "Qty": "20",
+        "Note": "May cause drowsiness"
+      }
+    },
+    {
+      "Furosemide": {
+        "dose": "40mg",
+        "when": "1-0-0",
+        "frequency": "Once daily",
+        "duration": "Ongoing",
+        "Qty": "30",
+        "Note": "Monitor potassium levels regularly"
+      }
+    },
+    {
+      "Sertraline": {
+        "dose": "50mg",
+        "when": "1-0-0",
+        "frequency": "Once daily",
+        "duration": "Ongoing",
+        "Qty": "30",
+        "Note": "May take 1-2 weeks to feel full effects"
+      }
+    },
+    {
+      "Doxycycline": {
+        "dose": "100mg",
+        "when": "1-0-1",
+        "frequency": "Twice daily",
+        "duration": "7 days",
+        "Qty": "14",
+        "Note": "Do not lie down for at least 30 minutes after taking"
+      }
+    },
+    {
+      "Diazepam": {
+        "dose": "5mg",
+        "when": "0-0-1",
+        "frequency": "Once or twice daily",
+        "duration": "Ongoing",
+        "Qty": "20",
+        "Note": "Avoid alcohol while taking"
+      }
+    },
+    {
+      "Alprazolam": {
+        "dose": "0.5mg",
+        "when": "1-0-0",
+        "frequency": "Once or twice daily",
+        "duration": "Ongoing",
+        "Qty": "20",
+        "Note": "Take with food if stomach upset occurs"
+      }
+    },
+    {
+      "Ranitidine": {
+        "dose": "150mg",
+        "when": "1-0-0",
+        "frequency": "Twice daily",
+        "duration": "5 days",
+        "Qty": "10",
+        "Note": "Do not exceed the recommended dose"
+      }
+    },
+    {
+      "Cetirizine": {
+        "dose": "10mg",
+        "when": "1-0-0",
+        "frequency": "Once daily",
+        "duration": "5 days",
+        "Qty": "5",
+        "Note": "Take at the same time each day"
+      }
+    },
+    {
+      "Acetaminophen": {
+        "dose": "325mg",
+        "when": "1-0-1",
+        "frequency": "Every 4-6 hours",
+        "duration": "5 days",
+        "Qty": "20",
+        "Note": "Do not exceed 4,000mg per day"
+      }
+    }
+  ]
+}

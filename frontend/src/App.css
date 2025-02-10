@@ -1,0 +1,41 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: Arial, sans-serif;
+}
+
+.app-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.navbar {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 3;
+}
+
+.primary-sidebar {
+  height: calc(100% - 60px); /* Adjust for the height of the navbar */
+  position: fixed;
+  top: 60px; /* Adjust for the height of the navbar */
+  left: 0;
+  z-index: 2;
+}
+
+.app-content {
+  flex: 1;
+  margin-top: 60px; /* Adjust for the height of the navbar */
+  margin-left: 250px; /* Adjust for the width of the sidebar */
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.primary-sidebar.collapsed + .app-content {
+  margin-left: 60px; /* Adjust for the width of the collapsed sidebar */
+}
