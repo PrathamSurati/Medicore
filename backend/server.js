@@ -1,39 +1,50 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const AuthRouter = require("./Routes/AuthRouter");
+const Patient = require("./Models/Patient"); // Import the model correctly
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "http://localhost:5173" })); // Allow frontend URL
+app.use(express.json());
 
-mongoose.connect("mongodb+srv://prathamsurati27:LwAZmDepzLJxO1Gd@interndata.mc7mx.mongodb.net/?retryWrites=true&w=majority&appName=internData")
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+// Connect to MongoDB
+mongoose
+  .connect(
+    "mongodb+srv://prathamsurati27:LwAZmDepzLJxO1Gd@interndata.mc7mx.mongodb.net/internData",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-const patientSchema = new mongoose.Schema({
-  name: String,
-  createdAt: Date,
-});
-
-const Patient = mongoose.model('Patient', patientSchema);
-
-app.get('/api/patients', async (req, res) => {
+app.use("/api", AuthRouter);
+app.use("/prescriptions", require("./Routes/prescriptions"));
+// API Route to Fetch Patients
+app.get("/api/patients", async (req, res) => {
   try {
-    console.log('Fetching patients...');
-    const patients = await Patient.find({}, 'name createdAt');
-    console.log('Patients fetched:', patients);
+    console.log("Fetching patients...");
+    const patients = await Patient.find(
+      {},
+      "name phone gender age dob city address pin createdAt"
+    ); // Fetch all required fields
+    console.log("✅ Patients fetched:", patients);
     res.json(patients);
   } catch (err) {
-    console.error('Error fetching patients:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("❌ Error fetching patients:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Add a catch-all route to handle unexpected requests
+// Catch-All Route (404)
 app.use((req, res) => {
-  res.status(404).send('Not Found');
+  res.status(404).json({ error: "Not Found" });
 });
 
-const PORT = process.env.PORT || 5000;
+// Start Server
+const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
