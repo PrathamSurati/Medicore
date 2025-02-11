@@ -15,4 +15,19 @@ router.get("/", async (req, res) => {
   }
 });
 
+// POST route to save prescription
+router.post('/', async (req, res) => {
+  try {
+    const newPrescription = new Prescription(req.body);
+    await newPrescription.save();
+    res.status(201).json({ 
+      message: 'Prescription saved successfully',
+      prescription: newPrescription
+    });
+  } catch (error) {
+    console.error('Error saving prescription:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
 module.exports = router;
