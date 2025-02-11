@@ -27,6 +27,7 @@ const NewPrescription = () => {
   const [sampleMedicines, setSampleMedicines] = useState({});
   const [filteredMedicines, setFilteredMedicines] = useState([]);
   const [date, setDate] = useState(""); // Define date state
+  const [title, setTitle] = useState(""); // Define title state
 
   useEffect(() => {
     setSampleComplaints(Complains.medical_complaints);
@@ -158,6 +159,7 @@ const NewPrescription = () => {
         diagnosis,
         medicines,
         nextVisit: date, // Use the date state
+        title, // Include the title in the prescription data
       };
 
       // Reset form data after saving
@@ -172,6 +174,7 @@ const NewPrescription = () => {
       setDiagnosis([]);
       setMedicines([]);
       setDate(""); // Reset the date input
+      setTitle(""); // Reset the title input
 
     try {
       const response = await axios.post('http://localhost:8081/prescriptions', prescriptionData);
@@ -188,6 +191,15 @@ const NewPrescription = () => {
   return (
     <div className="container">
       <h1>New Prescription</h1>
+      <div className="section">
+        <h2>Title</h2>
+        <input
+          type="text"
+          placeholder="Prescription Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </div>
       <div className="vitals-section">
         <h2>Vitals</h2>
         {vitals.map((vital) => (

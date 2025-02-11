@@ -22,7 +22,7 @@ const Sidebar = ({ onAddClick }) => {
 
   useEffect(() => {
     // Fetch the patients from your API
-    fetch('/api/patients')
+    fetch('http://localhost:8081/api/patients')
       .then(response => {
         console.log('Response:', response);
         if (!response.ok) {
