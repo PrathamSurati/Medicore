@@ -22,6 +22,20 @@ mongoose
 
 app.use("/api", AuthRouter);
 app.use("/prescriptions", require("./Routes/prescriptions"));
+
+// Add new API endpoint for fetching prescription titles
+app.get("/api/prescriptions", async (req, res) => {
+  try {
+    console.log("Fetching prescription titles...");
+    const prescriptions = await require("./Models/Prescription").find({}, "title");
+    console.log("Prescription titles fetched:", prescriptions);
+    res.json(prescriptions);
+  } catch (err) {
+    console.error("Error fetching prescription titles:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // API Route to Fetch Patients
 app.get("/api/patients", async (req, res) => {
   try {
@@ -30,7 +44,7 @@ app.get("/api/patients", async (req, res) => {
       {},
       "name phone gender age dob city address pin createdAt"
     ); // Fetch all required fields
-    console.log("Patients fetched:", patients);
+    // console.log("Patients fetched:", patients);
     res.json(patients);
   } catch (err) {
     console.error("Error fetching patients:", err);
