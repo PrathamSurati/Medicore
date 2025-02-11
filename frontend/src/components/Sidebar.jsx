@@ -18,6 +18,7 @@ const Sidebar = ({ onAddClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [patients, setPatients] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]); 
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -38,7 +39,25 @@ const Sidebar = ({ onAddClick }) => {
         console.error('Error fetching patients:', error);
         setError(error.toString());
       });
+
+
+
+      fetch('http://localhost:8081/api/prescriptions')
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            setPrescriptions(data);
+          })
+          .catch(error => {
+            setError(error.toString());
+          });
   }, []);
+
+
 
   const menuItems = [
     { id: "Add patient", label: "Add patient", icon: addPatientIcon },
@@ -49,23 +68,7 @@ const Sidebar = ({ onAddClick }) => {
     { id: "settings", label: "Settings", icon: settingsIcon },
   ];
 
-  const templatesData = [
-    {
-      id: 1,
-      name: "Template 1",
-      description: "Description for Template 1",
-    },
-    {
-      id: 2,
-      name: "Template 2",
-      description: "Description for Template 2",
-    },
-    {
-      id: 3,
-      name: "Template 3",
-      description: "Description for Template 3",
-    },
-  ];
+
 
   const handleSearch = useCallback((e) => {
     setSearchTerm(e.target.value);
@@ -74,11 +77,6 @@ const Sidebar = ({ onAddClick }) => {
   const filteredPatients = patients
     .filter((patient) =>
       patient.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-  const filteredTemplates = templatesData
-    .filter((template) =>
-      template.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   const handleToggleSidebar = () => {
@@ -217,21 +215,18 @@ const Sidebar = ({ onAddClick }) => {
           </div>
 
           <div className="templates-list">
-            {filteredTemplates.length === 0 ? (
-              <div className="no-results">No templates found</div>
-            ) : (
-              filteredTemplates.map((template, index) => (
-                <div key={template.id} className="template-card">
-                  <h4>
-                    {index + 1}. {template.name}
-                  </h4>
-                  <p>
-                    <small>{template.description}</small>
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
+              {prescriptions.length === 0 ? (
+                <div className="no-results">No prescriptions found</div>
+              ) : (
+                prescriptions.map((prescription, index) => (
+                  <div key={prescription._id} className="template-card">
+                    <h4>
+                      {index + 1}. {prescription.title}
+                    </h4>
+                  </div>
+                ))
+              )}
+            </div>
         </aside>
       )}
 
