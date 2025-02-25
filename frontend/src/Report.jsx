@@ -372,3 +372,89 @@ const NewPrescription = () => {
 };
 
 export default NewPrescription;
+
+
+
+
+// import  { useState } from "react";
+// import VitalsComponent from './components/Report/Vitals/Vitals';
+// import ComplaintsComponent from './components/Report/Complaints/Complains';
+// import DiagnosisComponent from './components/Report/Diagnosis/Diagnosis';
+// import MedicinesComponent from './components/Report/Medicines/Medicines';
+// import NextVisitComponent from './components/Report/NextVisit/NextVisit';
+// import TitleComponent from './components/Report/Title/Title';
+// import "./Report.css"; // Import the main CSS for the report
+
+// const Report = () => {
+//   const [vitals, setVitals] = useState([
+//     { id: 1, name: "BP", value: "" },
+//     { id: 2, name: "Pulse", value: "" },
+//     { id: 3, name: "Temperature", value: "" },
+//     { id: 4, name: "SpO2", value: "" },
+//     { id: 5, name: "Height", value: "" },
+//   ]);
+
+//   const [diagnosis, setDiagnosis] = useState([]);
+//   const [medicines, setMedicines] = useState([]);
+//   const [complaints, setComplaints] = useState([]);
+//   const [date, setDate] = useState(""); // Define date state
+//   const [title, setTitle] = useState(""); // Define title state
+
+//   // Handle prescription submission
+//   const handleSubmit = async () => {
+//     const prescriptionData = {
+//       vitals,
+//       complaints,
+//       diagnosis,
+//       medicines,
+//       nextVisit: date, // Use the date state
+//       title, // Include the title in the prescription data
+//     };
+
+//     try {
+//       // Using fetch or axios to send the data to your backend
+//       console.log('Sending prescription data:', prescriptionData);
+//       // Uncomment the below lines when your backend is ready
+//       // const response = await fetch('http://localhost:8081/prescriptions', {
+//       //   method: 'POST',
+//       //   headers: {
+//       //     'Content-Type': 'application/json',
+//       //   },
+//       //   body: JSON.stringify(prescriptionData),
+//       // });
+//       // const data = await response.json();
+//       // console.log('Prescription saved successfully:', data.message);
+//     } catch (error) {
+//       console.error('Error saving prescription:', error);
+//     }
+
+//     // Reset form data after saving
+//     setVitals([
+//       { id: 1, name: "BP", value: "" },
+//       { id: 2, name: "Pulse", value: "" },
+//       { id: 3, name: "Temperature", value: "" },
+//       { id: 4, name: "SpO2", value: "" },
+//       { id: 5, name: "Height", value: "" },
+//     ]);
+//     setComplaints([]);
+//     setDiagnosis([]);
+//     setMedicines([]);
+//     setDate(""); // Reset the date input
+//     setTitle(""); // Reset the title input
+//   };
+
+//   return (
+//     <div className="container">
+//       <h1>New Prescription</h1>
+//       <TitleComponent title={title} setTitle={setTitle} />
+//       <VitalsComponent vitals={vitals} setVitals={setVitals} />
+//       <ComplaintsComponent complaints={complaints} setComplaints={setComplaints} />
+//       <DiagnosisComponent diagnosis={diagnosis} setDiagnosis={setDiagnosis} />
+//       <MedicinesComponent medicines={medicines} setMedicines={setMedicines} />
+//       <NextVisitComponent date={date} setDate={setDate} />
+//       <button className="save-button" onClick={handleSubmit}>Save Prescription</button>
+//     </div>
+//   );
+// };
+
+// export default Report;

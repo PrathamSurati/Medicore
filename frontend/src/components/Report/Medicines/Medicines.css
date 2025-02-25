@@ -1,0 +1,13 @@
+.section {
+    margin: 20px 0;
+  }
+  
+  .medicine-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+  }
+  
+  .medicine-item input, .medicine-item textarea {
+    margin-bottom: 5px;
+  }

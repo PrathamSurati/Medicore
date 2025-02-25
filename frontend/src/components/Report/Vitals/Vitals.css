@@ -1,0 +1,13 @@
+.vitals-section {
+    margin: 20px 0;
+  }
+  
+  .vital-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .vital-item input {
+    margin-right: 10px;
+  }

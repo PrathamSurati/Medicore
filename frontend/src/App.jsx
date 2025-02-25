@@ -7,7 +7,8 @@ import './App.css';
 import Report from './Report';
 import Settings from './settings/Settings';
 import Dashboard from './Dashboard/Dashboard';
-// import Addbills from './Billing/Billing';
+import AddBills from './Billing/Components/AddBills';
+import Billing from "./Billing/Billing";
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,7 +44,8 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/reports" element={<Report />} />
             <Route path="/settings" element={<Settings />} />
-            {/* <Route path="/Addbills" element={<Addbills />} /> */}
+            <Route path="/billing" element={<Billing />} />
+            <Route path="/AddBills" element={<AddBills />} />
           </Routes>
         </div>
       </div>

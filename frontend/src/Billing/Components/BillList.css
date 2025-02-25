@@ -1,0 +1,135 @@
+.bill-list-container {
+  margin-top: 20px;
+}
+
+.bill-table-container {
+  overflow-x: auto;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bill-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bill-table th,
+.bill-table td {
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.bill-table th {
+  background-color: #f6f6f6;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.bill-table th:hover {
+  background-color: #eee;
+}
+
+.bill-table tbody tr {
+  border-bottom: 1px solid #eee;
+}
+
+.bill-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.bill-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.sort-indicator {
+  font-size: 12px;
+  color: #666;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-paid {
+  background-color: #e6f7e6;
+  color: #22c55e;
+}
+
+.status-pending {
+  background-color: #fff7e6;
+  color: #f59e0b;
+}
+
+.status-overdue {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.action-btn {
+  padding: 6px 10px;
+  margin: 0 2px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.view-btn {
+  background-color: #e5e7eb;
+  color: #4b5563;
+}
+
+.pay-btn {
+  background-color: #e6f7e6;
+  color: #22c55e;
+}
+
+.delete-btn {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.view-btn:hover {
+  background-color: #d1d5db;
+}
+
+.pay-btn:hover {
+  background-color: #d1fad1;
+}
+
+.delete-btn:hover {
+  background-color: #fecaca;
+}
+
+.no-bills {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .bill-table th,
+  .bill-table td {
+    padding: 10px;
+  }
+  
+  .action-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
