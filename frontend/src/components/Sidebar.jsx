@@ -13,8 +13,7 @@ import saveIcon from "../assets/images/save.png";
 import "./Sidebar.css";
 import PropTypes from "prop-types";
 
-const Sidebar = ({ onAddClick }) => {
-  const [activeSection, setActiveSection] = useState(null);
+const Sidebar = ({ onAddClick, activeSection, setActiveSection }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [patients, setPatients] = useState([]);
@@ -60,8 +59,8 @@ const Sidebar = ({ onAddClick }) => {
 
 
   const menuItems = [
-    { id: "Add patient", label: "Add patient", icon: addPatientIcon },
-    { id: "Add Bills", label: "Add Bills", icon: addBillIcon },
+    { id: "Add patient", label: "Add patient", icon: addPatientIcon }, // Change id to match route
+    { id: "AddBills", label: "Add Bills", icon: addBillIcon },
     { id: "patients", label: "Patients", icon: patientsIcon },
     { id: "reports", label: "Reports", icon: reportsIcon },
     { id: "saveTemplate", label: "Save Template", icon: saveIcon }, 
@@ -236,7 +235,9 @@ const Sidebar = ({ onAddClick }) => {
 };
 
 Sidebar.propTypes = {
-  onAddClick: PropTypes.func.isRequired,                           
+  onAddClick: PropTypes.func.isRequired,
+  activeSection: PropTypes.string,
+  setActiveSection: PropTypes.func.isRequired,
 };
 
 export default Sidebar;

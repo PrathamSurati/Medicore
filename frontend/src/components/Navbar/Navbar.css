@@ -16,7 +16,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  cursor: default;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .Add_icon {

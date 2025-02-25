@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from 'axios'; // Import axios
 import "./Report.css";
-import Complains from '../utils/json/complains.json';
-import DiagnosisData from '../utils/json/DiagnosisValue.json';
-import MedicineData from '../utils/json/medicine.json';
+import Complains from './utils/json/complains.json';
+import DiagnosisData from './utils/json/DiagnosisValue.json';
+import MedicineData from './utils/json/medicine.json';
 
 const NewPrescription = () => {
   const [vitals, setVitals] = useState([
