@@ -126,7 +126,7 @@ const BillForm = ({ bill, onSubmit, onCancel, title, patients }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="amount">Amount ($)</label>
+          <label htmlFor="amount">Amount (₹)</label>
           <input
             type="number"
             step="0.01"

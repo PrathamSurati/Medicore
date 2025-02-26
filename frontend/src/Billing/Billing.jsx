@@ -1,21 +1,39 @@
-import  { useState, useEffect } from 'react';
-import { getBillingData, createBill, updateBill, deleteBill } from './BillingService';
+import { useState, useEffect } from 'react';
+import { getBillingData, updateBill, deleteBill } from './BillingService';
 import BillForm from './BillForm';
-import BillList from './BillList';
+import BillList from './Components/BillList'; // Make sure the import path is correct
 import './Billing.css';
+import PaymentForm from './Components/PaymentForm';
+import axios from 'axios';
 
 const Billing = () => {
   const [bills, setBills] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editBill, setEditBill] = useState(null);
+  const [paymentBill, setPaymentBill] = useState(null); // Add this missing state
+
   const [stats, setStats] = useState({
     totalBills: 0,
     paidAmount: 0,
     pendingAmount: 0,
     overdueBills: 0
   });
+
+  // API URL
+  const API_URL = 'http://localhost:8081/api';
+  
+  // Fetch patients data
+  const fetchPatients = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/patients`);
+      setPatients(response.data);
+    } catch (err) {
+      console.error('Error fetching patients:', err);
+    }
+  };
 
   // Fetch billing data
   const fetchBills = async () => {
@@ -88,6 +106,38 @@ const Billing = () => {
     }
   };
 
+  // Add a view/edit bill handler
+  const handleViewBill = (bill) => {
+    setEditBill(bill); // Use the edit modal to view the bill
+  };
+
+  // Handle payment
+  const handlePayBill = (bill) => {
+    setPaymentBill(bill);
+  };
+
+  // Process the payment
+  const processPayment = async (paymentDetails) => {
+    try {
+      // Create a new object with updated payment information
+      const updatedBill = {
+        ...paymentBill,
+        status: 'Paid',
+        paymentDate: new Date(),
+        paymentMethod: paymentDetails.paymentMethod,
+        paymentReference: paymentDetails.reference || '',
+        notes: paymentDetails.notes || paymentBill.notes || ''
+      };
+
+      await updateBill(updatedBill);
+      setPaymentBill(null);
+      fetchBills();
+    } catch (err) {
+      setError('Failed to process payment. Please try again.');
+      console.error('Error processing payment:', err);
+    }
+  };
+
   return (
     <div className="billing-container">
       <div className="billing-header">
@@ -106,11 +156,11 @@ const Billing = () => {
         </div>
         <div className="stat-card">
           <h3>Paid Amount</h3>
-          <p>${stats.paidAmount.toFixed(2)}</p>
+          <p>₹{stats.paidAmount.toFixed(2)}</p>
         </div>
         <div className="stat-card">
           <h3>Pending Amount</h3>
-          <p>${stats.pendingAmount.toFixed(2)}</p>
+          <p>₹{stats.pendingAmount.toFixed(2)}</p>
         </div>
         <div className="stat-card">
           <h3>Overdue Bills</h3>
@@ -123,8 +173,9 @@ const Billing = () => {
       ) : (
         <BillList 
           bills={bills} 
-          onEdit={setEditBill} 
+          onEdit={handleViewBill} 
           onDelete={handleDeleteBill} 
+          onPay={handlePayBill}
         />
       )}
 
@@ -148,6 +199,18 @@ const Billing = () => {
               onSubmit={handleEditBill}
               onCancel={() => setEditBill(null)}
               title="Edit Bill"
+            />
+          </div>
+        </div>
+      )}
+
+      {paymentBill && (
+        <div className="modal-overlay">
+          <div className="modal-content payment-modal">
+            <PaymentForm 
+              bill={paymentBill}
+              onSubmit={processPayment}
+              onCancel={() => setPaymentBill(null)}
             />
           </div>
         </div>

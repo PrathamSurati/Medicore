@@ -1,33 +1,59 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import './BillList.css';
 
-const BillList = ({ bills, patients, onViewBill, onPayBill, onDeleteBill }) => {
+// Rename the props to match what the Billing component is actually passing
+const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
   const [sortConfig, setSortConfig] = useState({
     key: 'billDate',
     direction: 'desc'
   });
 
+  // Helper function to safely access amounts and add defensive programming
+  const safeAmount = (amount) => {
+    // Check if the amount is valid
+    if (amount === undefined || amount === null || isNaN(Number(amount))) {
+      return 0;
+    }
+    return Number(amount);
+  };
+
   const getPatientName = (patientId) => {
+    // Check if patients is available before using find
+    if (!patients || patients.length === 0) {
+      return patientId || 'Unknown Patient';
+    }
     const patient = patients.find(p => p._id === patientId);
     return patient ? patient.name : 'Unknown Patient';
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Invalid date format:', dateString);
+      return 'Invalid Date';
+    }
   };
 
   const getStatusClass = (status, dueDate) => {
     if (status === 'Paid') return 'status-paid';
     
-    const today = new Date();
-    const due = new Date(dueDate);
+    if (!dueDate) return 'status-pending';
     
-    return due < today ? 'status-overdue' : 'status-pending';
+    try {
+      const today = new Date();
+      const due = new Date(dueDate);
+      return due < today ? 'status-overdue' : 'status-pending';
+    } catch (error) {
+      return 'status-pending';
+    }
   };
 
   const requestSort = (key) => {
@@ -38,7 +64,14 @@ const BillList = ({ bills, patients, onViewBill, onPayBill, onDeleteBill }) => {
     setSortConfig({ key, direction });
   };
 
-  const sortedBills = [...bills].sort((a, b) => {
+  // Make sure we have an array of bills to work with
+  const billsArray = Array.isArray(bills) ? bills : [];
+
+  const sortedBills = [...billsArray].sort((a, b) => {
+    if (!a[sortConfig.key] && !b[sortConfig.key]) return 0;
+    if (!a[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (!b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
+    
     if (a[sortConfig.key] < b[sortConfig.key]) {
       return sortConfig.direction === 'asc' ? -1 : 1;
     }
@@ -86,6 +119,14 @@ const BillList = ({ bills, patients, onViewBill, onPayBill, onDeleteBill }) => {
                   </span>
                 )}
               </th>
+              <th onClick={() => requestSort('dueDate')}>
+                Due Date
+                {sortConfig.key === 'dueDate' && (
+                  <span className="sort-indicator">
+                    {sortConfig.direction === 'asc' ? ' ↑' : ' ↓'}
+                  </span>
+                )}
+              </th>
               <th onClick={() => requestSort('status')}>
                 Status
                 {sortConfig.key === 'status' && (
@@ -94,40 +135,62 @@ const BillList = ({ bills, patients, onViewBill, onPayBill, onDeleteBill }) => {
                   </span>
                 )}
               </th>
+              <th>Payment</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {sortedBills.length > 0 ? (
-              sortedBills.map((bill) => (
-                <tr key={bill._id}>
-                  <td>{bill.billNumber}</td>
-                  <td>{getPatientName(bill.patientId)}</td>
-                  <td>{formatDate(bill.billDate)}</td>
-                  <td>₹{bill.totalAmount.toFixed(2)}</td>
-                  <td>
-                    <span className={`status-badge ${getStatusClass(bill.status, bill.dueDate)}`}>
-                      {bill.status}
-                    </span>
-                  </td>
-                  <td className="actions-cell">
-                    <button className="action-btn view-btn" onClick={() => onViewBill(bill)}>
-                      View
-                    </button>
-                    {bill.status !== 'Paid' && (
-                      <button className="action-btn pay-btn" onClick={() => onPayBill(bill)}>
-                        Pay
+              sortedBills.map((bill) => {
+                // Check if bill has all required properties
+                if (!bill || !bill._id) {
+                  console.error('Invalid bill object:', bill);
+                  return null;
+                }
+                
+                // Get the amount safely, preferring totalAmount but falling back to amount
+                const amount = safeAmount(bill.totalAmount || bill.amount);
+                
+                return (
+                  <tr key={bill._id}>
+                    <td>{bill.billNumber || `BL-${bill._id?.substr(-6) || 'N/A'}`}</td>
+                    <td>{bill.patientName || getPatientName(bill.patientId)}</td>
+                    <td>{formatDate(bill.billDate || bill.date || bill.createdAt)}</td>
+                    <td>₹{amount.toFixed(2)}</td>
+                    <td>{formatDate(bill.dueDate)}</td>
+                    <td>
+                      <span className={`status-badge ${getStatusClass(bill.status, bill.dueDate)}`}>
+                        {bill.status || 'Pending'}
+                      </span>
+                    </td>
+                    <td>
+                      <button 
+                        className={`payment-btn ${bill.status === 'Paid' ? 'disabled' : ''}`} 
+                        onClick={() => bill.status !== 'Paid' && onPay && onPay(bill)}
+                        disabled={bill.status === 'Paid'}
+                      >
+                        {bill.status === 'Paid' ? 'Paid' : 'Pay Now'}
                       </button>
-                    )}
-                    <button className="action-btn delete-btn" onClick={() => onDeleteBill(bill._id)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                    <td className="actions-cell">
+                      {/* Use onEdit instead of onViewBill */}
+                      {onEdit && (
+                        <button className="action-btn view-btn" onClick={() => onEdit(bill)}>
+                          Edit
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button className="action-btn delete-btn" onClick={() => onDelete(bill._id)}>
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan="6" className="no-bills">
+                <td colSpan="8" className="no-bills">
                   No bills found
                 </td>
               </tr>

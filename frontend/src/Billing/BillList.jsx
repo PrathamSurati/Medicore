@@ -110,7 +110,7 @@ const BillList = ({ bills, onEdit, onDelete }) => {
                 <tr key={bill.id}>
                   <td>{bill.patientName}</td>
                   <td>{bill.description}</td>
-                  <td>${bill.amount.toFixed(2)}</td>
+                  <td>₹{bill.amount.toFixed(2)}</td>
                   <td>
                     <span className={`status-badge ${getStatusClass(bill.status)}`}>
                       {bill.status}

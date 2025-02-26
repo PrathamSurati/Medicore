@@ -133,3 +133,46 @@
     font-size: 11px;
   }
 }
+
+.payment-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  background-color: #4caf50;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.payment-btn:hover {
+  background-color: #45a049;
+}
+
+.payment-btn.disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+}
+
+.status-badge.status-paid {
+  background-color: #4caf50;
+  color: white;
+}
+
+.status-badge.status-pending {
+  background-color: #ff9800;
+  color: white;
+}
+
+.status-badge.status-overdue {
+  background-color: #f44336;
+  color: white;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  display: inline-block;
+}
