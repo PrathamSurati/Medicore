@@ -1,3 +1,64 @@
 .section {
-    margin: 20px 0;
+  margin-bottom: 24px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden; /* Prevent content from extending outside */
+}
+
+.section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 16px;
+  position: relative;
+  padding-left: 14px;
+}
+
+.section h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+  width: 4px;
+  background-color: #9b59b6;
+  border-radius: 2px;
+}
+
+.section input {
+  width: 100%;
+  max-width: calc(100% - 10px); /* Ensure it stays within boundaries */
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.section input:focus {
+  outline: none;
+  border-color: #9b59b6;
+  box-shadow: 0 0 0 2px rgba(155, 89, 182, 0.1);
+}
+
+.section input::placeholder {
+  color: #95a5a6;
+}
+
+/* Media queries for smaller screens */
+@media (max-width: 768px) {
+  .section {
+    padding: 15px;
   }
+}

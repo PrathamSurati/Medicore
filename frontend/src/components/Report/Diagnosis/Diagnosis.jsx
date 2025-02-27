@@ -1,15 +1,30 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
-import DiagnosisData from '../../../utils/json/DiagnosisValue.json'; // Import JSON
+import DiagnosisData from '../../../utils/json/DiagnosisValue.json';
 import './Diagnosis.css';
 
 const DiagnosisComponent = ({ diagnosis, setDiagnosis }) => {
   const [diagnosisInputValue, setDiagnosisInputValue] = useState("");
   const [filteredDiagnosis, setFilteredDiagnosis] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionPosition, setSuggestionPosition] = useState({ top: 0, left: 0 });
+  const inputRef = useRef(null);
 
   useEffect(() => {
-    setFilteredDiagnosis(DiagnosisData.DiagnosisValue);
+    setFilteredDiagnosis(DiagnosisData.DiagnosisValue.slice(0, 20));
   }, []);
+
+  // Update suggestion position when input changes or when showing suggestions
+  useEffect(() => {
+    if (showSuggestions && inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setSuggestionPosition({
+        top: rect.bottom + window.scrollY + 5, // 5px below the input
+        left: rect.left + window.scrollX,
+      });
+    }
+  }, [showSuggestions, diagnosisInputValue]);
 
   const handleDiagnosisChange = (event) => {
     const query = event.target.value.toLowerCase();
@@ -19,9 +34,11 @@ const DiagnosisComponent = ({ diagnosis, setDiagnosis }) => {
       const filtered = DiagnosisData.DiagnosisValue.filter((diag) =>
         diag.toLowerCase().includes(query)
       );
-      setFilteredDiagnosis(filtered);
+      setFilteredDiagnosis(filtered.slice(0, 20)); // Limit to 20 for better performance
+      setShowSuggestions(true);
     } else {
-      setFilteredDiagnosis(DiagnosisData.DiagnosisValue);
+      setFilteredDiagnosis(DiagnosisData.DiagnosisValue.slice(0, 20));
+      setShowSuggestions(false);
     }
   };
 
@@ -29,7 +46,52 @@ const DiagnosisComponent = ({ diagnosis, setDiagnosis }) => {
     if (e.key === "Enter" && diagnosisInputValue) {
       setDiagnosis([...diagnosis, diagnosisInputValue]);
       setDiagnosisInputValue("");
+      setShowSuggestions(false);
     }
+  };
+
+  const handleSelectDiagnosis = (diag) => {
+    setDiagnosis([...diagnosis, diag]);
+    setDiagnosisInputValue("");
+    setShowSuggestions(false);
+    inputRef.current.focus();
+  };
+
+  const handleFocus = () => {
+    if (diagnosisInputValue.length > 0) {
+      setShowSuggestions(true);
+    }
+  };
+
+  // Use a portal to render suggestions outside of the section
+  const renderSuggestions = () => {
+    if (!showSuggestions || filteredDiagnosis.length === 0) return null;
+
+    const suggestionStyle = {
+      position: 'absolute',
+      top: `${suggestionPosition.top}px`,
+      left: `${suggestionPosition.left}px`,
+    };
+
+    return createPortal(
+      <div className="diagnosis-suggestions-container" style={suggestionStyle}>
+        <div className="diagnosis-suggestions-header">
+          Diagnosis Suggestions ({filteredDiagnosis.length})
+        </div>
+        <div className="diagnosis-suggestions">
+          {filteredDiagnosis.map((suggestion, index) => (
+            <div 
+              key={index} 
+              className="suggestion-item"
+              onClick={() => handleSelectDiagnosis(suggestion)}
+            >
+              {suggestion}
+            </div>
+          ))}
+        </div>
+      </div>,
+      document.body
+    );
   };
 
   return (
@@ -37,28 +99,16 @@ const DiagnosisComponent = ({ diagnosis, setDiagnosis }) => {
       <h2>Diagnosis</h2>
       <div className="diagnosis-input-container">
         <input
+          ref={inputRef}
           type="text"
           placeholder="Type to add diagnosis..."
           value={diagnosisInputValue}
           onChange={handleDiagnosisChange}
           onKeyDown={handleKeyDown}
+          onFocus={handleFocus}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
         />
-        {diagnosisInputValue && (
-          <div className="diagnosis-suggestions">
-            {filteredDiagnosis.slice(0, 5).map((suggestion, index) => (
-              <div 
-                key={index} 
-                className="suggestion-item"
-                onClick={() => {
-                  setDiagnosis([...diagnosis, suggestion]);
-                  setDiagnosisInputValue("");
-                }}
-              >
-                {suggestion}
-              </div>
-            ))}
-          </div>
-        )}
+        {renderSuggestions()}
       </div>
       <div className="tags">
         {diagnosis.map((d, index) => (
@@ -70,6 +120,7 @@ const DiagnosisComponent = ({ diagnosis, setDiagnosis }) => {
     </div>
   );
 };
+
 DiagnosisComponent.propTypes = {
   diagnosis: PropTypes.array.isRequired,
   setDiagnosis: PropTypes.func.isRequired

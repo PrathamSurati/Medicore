@@ -1,3 +1,69 @@
 .section {
-    margin: 20px 0;
+  margin-bottom: 24px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.section label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 18px;
+  position: relative;
+  padding-left: 14px;
+}
+
+.section label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+  width: 4px;
+  background-color: #2ecc71;
+  border-radius: 2px;
+}
+
+.section input[type="date"] {
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: #f8fafc;
+  color: #2c3e50;
+  width: 100%;
+  max-width: 300px;
+  transition: all 0.2s ease;
+}
+
+.section input[type="date"]:focus {
+  outline: none;
+  border-color: #2ecc71;
+  box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.1);
+}
+
+/* Calendar icon styling */
+.section input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.section input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .section input[type="date"] {
+    max-width: 100%;
   }
+}

@@ -1,15 +1,97 @@
 .section {
-    margin: 20px 0;
-  }
-  
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-  }
-  
-  .tag {
-    background-color: #e0e0e0;
-    border-radius: 5px;
-    padding: 5px 10px;
-    margin: 5px;
-  }
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.section h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.section input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Position suggestions outside of the section */
+.suggestions-container {
+  position: fixed;
+  z-index: 9999; /* Very high z-index to appear above everything */
+  left: 0;
+  top: 0;
+  pointer-events: none; /* This makes the container itself not block clicks */
+}
+
+.suggestions {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  background-color: white;
+  border: 2px solid #e74c3c; /* Bold border to make it stand out */
+  border-radius: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  pointer-events: auto; /* Re-enable clicks for the actual suggestions list */
+  width: 300px; /* Fixed width for consistency */
+}
+
+.suggestions-header {
+  background-color: #e74c3c;
+  color: white;
+  padding: 8px 12px;
+  font-weight: bold;
+  font-size: 14px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.suggestions li {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f1f1;
+  transition: background-color 0.2s ease;
+}
+
+.suggestions li:last-child {
+  border-bottom: none;
+}
+
+.suggestions li:hover {
+  background-color: #fdedeb;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tag {
+  background-color: #f5f5f5;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag button {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.tag button:hover {
+  color: #ff4d4d;
+}

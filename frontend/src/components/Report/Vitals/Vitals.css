@@ -1,13 +1,219 @@
 .vitals-section {
-    margin: 20px 0;
+  margin-bottom: 24px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.vitals-section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.vitals-header {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.vitals-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  position: relative;
+  padding-left: 14px;
+}
+
+.vitals-header h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+  width: 4px;
+  background-color: #3498db;
+  border-radius: 2px;
+}
+
+/* Row layout for vitals */
+.vitals-row-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Individual vital card */
+.vital-card {
+  display: flex;
+  align-items: center;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 4px 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  width: auto;
+  max-width: 150px;
+  min-width: 100px;
+}
+
+.vital-card:hover {
+  border-color: #3498db;
+  box-shadow: 0 2px 6px rgba(52, 152, 219, 0.15);
+  transform: translateY(-2px);
+}
+
+.vital-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  overflow: hidden;
+}
+
+.vital-name-input, .vital-value-input {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  padding: 5px;
+  width: auto;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  outline: none;
+}
+
+.vital-name-input {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-right: 2px;
+  border-right: 1px solid #e5e5e5;
+  padding-right: 6px;
+  max-width: 60px;
+  min-width: 25px;
+}
+
+.vital-value-input {
+  color: #2980b9;
+  max-width: 50px;
+  min-width: 25px;
+  text-align: center;
+}
+
+.vital-name-input:focus, .vital-value-input:focus {
+  background-color: #ecf0f1;
+  border-radius: 3px;
+}
+
+.vital-name-input::placeholder, .vital-value-input::placeholder {
+  color: #95a5a6;
+  opacity: 1;
+}
+
+.vital-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #95a5a6;
+  margin-left: 2px;
+  padding: 2px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-width: 20px;
+  opacity: 0.7;
+}
+
+.vital-card:hover .vital-remove-btn {
+  opacity: 1;
+}
+
+.vital-remove-btn:hover {
+  color: #e74c3c;
+  background-color: #fef2f2;
+}
+
+.vital-add-btn {
+  background-color: #ebf5fb;
+  color: #3498db;
+  border: 1px dashed #a9cce3;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.vital-add-btn:hover {
+  background-color: #d6eaf8;
+  border-color: #3498db;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(52, 152, 219, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .vitals-row-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
   }
   
-  .vital-item {
+  .vital-card {
+    max-width: 48%;
+    min-width: 100px;
+  }
+  
+  .vital-name-input, .vital-value-input {
+    min-width: 0;
+    width: 100%;
+  }
+  
+  .vital-content {
+    flex: 1;
     display: flex;
-    align-items: center;
-    margin-bottom: 10px;
   }
   
-  .vital-item input {
-    margin-right: 10px;
+  .vital-add-btn {
+    width: 100%;
+    justify-content: center;
   }
+}
+
+@media (max-width: 480px) {
+  .vitals-row-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .vital-card {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .vital-name-input, .vital-value-input {
+    max-width: none;
+  }
+  
+  .vital-content {
+    flex: 1;
+  }
+  
+  .vital-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

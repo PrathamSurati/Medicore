@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import './BillList.css';
 
-// Rename the props to match what the Billing component is actually passing
 const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
   const [sortConfig, setSortConfig] = useState({
     key: 'billDate',
     direction: 'desc'
   });
 
-  // Helper function to safely access amounts and add defensive programming
   const safeAmount = (amount) => {
-    // Check if the amount is valid
     if (amount === undefined || amount === null || isNaN(Number(amount))) {
       return 0;
     }
@@ -18,7 +15,6 @@ const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
   };
 
   const getPatientName = (patientId) => {
-    // Check if patients is available before using find
     if (!patients || patients.length === 0) {
       return patientId || 'Unknown Patient';
     }
@@ -31,6 +27,9 @@ const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
     
     try {
       const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
       return date.toLocaleDateString('en-IN', {
         year: 'numeric',
         month: 'short',
@@ -64,7 +63,6 @@ const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
     setSortConfig({ key, direction });
   };
 
-  // Make sure we have an array of bills to work with
   const billsArray = Array.isArray(bills) ? bills : [];
 
   const sortedBills = [...billsArray].sort((a, b) => {
@@ -80,6 +78,10 @@ const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
     }
     return 0;
   });
+
+  const getBestDate = (bill) => {
+    return bill.billDate || bill.date || bill.createdAt || bill.updatedAt || null;
+  };
 
   return (
     <div className="bill-list-container">
@@ -142,20 +144,19 @@ const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
           <tbody>
             {sortedBills.length > 0 ? (
               sortedBills.map((bill) => {
-                // Check if bill has all required properties
                 if (!bill || !bill._id) {
                   console.error('Invalid bill object:', bill);
                   return null;
                 }
                 
-                // Get the amount safely, preferring totalAmount but falling back to amount
                 const amount = safeAmount(bill.totalAmount || bill.amount);
+                const billDate = getBestDate(bill);
                 
                 return (
                   <tr key={bill._id}>
                     <td>{bill.billNumber || `BL-${bill._id?.substr(-6) || 'N/A'}`}</td>
                     <td>{bill.patientName || getPatientName(bill.patientId)}</td>
-                    <td>{formatDate(bill.billDate || bill.date || bill.createdAt)}</td>
+                    <td>{formatDate(billDate)}</td>
                     <td>₹{amount.toFixed(2)}</td>
                     <td>{formatDate(bill.dueDate)}</td>
                     <td>
@@ -173,7 +174,6 @@ const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
                       </button>
                     </td>
                     <td className="actions-cell">
-                      {/* Use onEdit instead of onViewBill */}
                       {onEdit && (
                         <button className="action-btn view-btn" onClick={() => onEdit(bill)}>
                           Edit

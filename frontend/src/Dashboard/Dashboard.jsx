@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import './Dashboard.css';
-import axios from 'axios'; // Make sure axios is imported
+import axios from 'axios';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalPatients: 0,
-    todayPatients: 0,
+    newPatients: 0,
     pendingBills: 0,
     totalRevenue: 0
   });
@@ -13,7 +13,7 @@ const Dashboard = () => {
   const [recentPatients, setRecentPatients] = useState([]);
   const [recentBills, setRecentBills] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const [dateFilter, setDateFilter] = useState('today');
   // API URL
   const API_URL = 'http://localhost:8081/api';
 

@@ -1,13 +1,382 @@
 .section {
-    margin: 20px 0;
+  margin-bottom: 24px;
+}
+
+.section h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.medicine-filter {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.medicine-filter label {
+  font-weight: 500;
+  color: #333;
+}
+
+.medicine-filter select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: white;
+  min-width: 150px;
+  font-size: 14px;
+}
+
+/* Add styling for medicine titles */
+.medicine-titles {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr 0.3fr;
+  gap: 15px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #555;
+}
+
+.medicine-titles span {
+  padding: 5px;
+  font-size: 14px;
+}
+
+.medicine-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr 0.3fr;
+  gap: 15px;
+  margin-bottom: 10px;
+  align-items: center;
+  /* Fix for gap not showing */
+  column-gap: 15px;
+  row-gap: 15px;
+  grid-gap: 15px; /* For older browsers */
+  border-bottom: 1px solid transparent; /* Forces layout rendering */
+  padding: 5px 0; /* Add some vertical padding */
+}
+
+.medicine-item input,
+.medicine-item textarea {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%; /* Ensure inputs take full width in their grid cell */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.medicine-item textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.medicine-item button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #666;
+  justify-self: center; /* Center the button in its grid cell */
+}
+
+.medicine-item button:hover {
+  color: #ffffff;
+}
+
+button.add-medicine {
+  background-color: #f5f5f5;
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button.add-medicine:hover {
+  background-color: #e0e0e0;
+}
+
+.filter-indicator {
+  color: #666;
+  font-size: 14px;
+  margin-left: 10px;
+  padding: 3px 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Add this class to match Report.jsx */
+.medicine_input {
+  background-color: #ffffff;
+}
+
+.medicines-container {
+  margin-bottom: 30px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.medicines-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.medicines-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.medicines-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  position: relative;
+  padding-left: 14px;
+}
+
+.medicines-header h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+  width: 4px;
+  background-color: #ffffff;
+  border-radius: 2px;
+}
+
+.medicine-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.medicine-filter label {
+  font-weight: 500;
+  color: #2c3e50;
+  white-space: nowrap;
+}
+
+.medicine-filter select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  min-width: 160px;
+  font-size: 14px;
+  color: #2c3e50;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232c3e50%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px top 50%;
+  background-size: 10px auto;
+  padding-right: 30px;
+  transition: all 0.2s ease;
+}
+
+.medicine-filter select:focus {
+  border-color: #ababab;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(95, 95, 95, 0.1);
+}
+
+.medicines-table {
+  margin-bottom: 20px;
+  background-color: #f8fafc;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.medicine-titles {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 0.7fr 1.5fr 0.3fr;
+  gap: 15px;
+  padding: 12px 15px;
+  background-color: #f0efef;
+  border-bottom: 1px solid #a2a2a2;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.medicine-titles span {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 5px;
+}
+
+.medicines-list {
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+.medicine-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 0.7fr 1.5fr 0.3fr;
+  gap: 15px;
+  padding: 12px 15px;
+  align-items: center;
+  border-bottom: 1px solid #f1f1f1;
+  transition: all 0.2s ease;
+}
+
+.medicine-item:hover {
+  background-color: #fafafa;
+}
+
+.medicine-item:last-child {
+  border-bottom: none;
+}
+
+.medicine-item input,
+.medicine-item textarea {
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.medicine-item input:focus,
+.medicine-item textarea:focus {
+  outline: none;
+  border-color: #f0efef;
+  box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.1);
+}
+
+.medicine_input {
+  background-color: #f8fafc;
+  font-weight: 500;
+}
+
+.medicine-item textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
+
+.remove-medicine-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #95a5a6;
+  border-radius: 50%;
+  height: 32px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin: 0 auto;
+  opacity: 0.7;
+}
+
+.medicine-item:hover .remove-medicine-btn {
+  opacity: 1;
+}
+
+.remove-medicine-btn:hover {
+  color: #d0d0d0;
+  background-color: #e3e3e3;
+}
+
+.add-medicine-btn {
+  background-color: #ebebeb;
+  color: #000000;
+  border: 1px solid #e5e4e4;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+  width: 100%;
+}
+
+.add-medicine-btn:hover {
+  background-color: #e4e4e4;
+  border-color: #dcdbdb;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(90, 90, 90, 0.2);
+}
+
+.filter-indicator {
+  background-color: #fff8f0;
+  color: #f0efef;
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid #f0efef;
+}
+
+.plus-icon {
+  margin-right: 5px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+  .medicine-titles {
+    display: none;
   }
   
   .medicine-item {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 15px;
+    border-bottom: 1px solid #f1f1f1;
   }
   
-  .medicine-item input, .medicine-item textarea {
+  .medicine-item:before {
+    content: attr(data-label);
+    font-weight: bold;
     margin-bottom: 5px;
   }
+  
+  .remove-medicine-btn {
+    margin-top: 10px;
+    width: 100%;
+    border-radius: 8px;
+    background-color: #fef2f2;
+    height: 36px;
+  }
+  
+  .medicines-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .medicine-filter {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .medicine-filter select {
+    flex-grow: 1;
+  }
+}
