@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const AuthRouter = require("./Routes/AuthRouter");
-const Patient = require("./Models/Patient"); // Import the model correctly
+const Patient = require("./Models/Patient");
 const billRoutes = require("./routes/bills");
 
 // Load environment variables
@@ -13,7 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 8081;
 
 // Middleware
-app.use(cors({ origin: "http://localhost:5173" })); // Allow frontend URL
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
 // Connect to MongoDB
@@ -28,9 +28,43 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+// Routes
 app.use("/api", AuthRouter);
 app.use("/prescriptions", require("./Routes/prescriptions"));
 app.use("/api/bills", billRoutes);
+
+// API Route to Fetch All Patients
+app.get("/api/patients", async (req, res) => {
+  try {
+    console.log("Fetching patients...");
+    const patients = await Patient.find(
+      {},
+      "name phone gender age dob city address pin createdAt"
+    );
+    res.json(patients);
+  } catch (err) {
+    console.error("Error fetching patients:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API Route to Fetch Single Patient by ID
+app.get("/api/patients/:id", async (req, res) => {
+  console.log(`Fetching patient with ID: ${req.params.id}`);
+  try {
+    const patient = await Patient.findById(req.params.id);
+    console.log('Found patient:', patient ? 'Yes' : 'No');
+    if (!patient) {
+      console.log('Patient not found in database');
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+    console.log('Sending patient data');
+    res.json(patient);
+  } catch (error) {
+    console.error('Error fetching patient by ID:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // Add new API endpoint for fetching prescription titles
 app.get("/api/prescriptions", async (req, res) => {
@@ -41,22 +75,6 @@ app.get("/api/prescriptions", async (req, res) => {
     res.json(prescriptions);
   } catch (err) {
     console.error("Error fetching prescription titles:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// API Route to Fetch Patients
-app.get("/api/patients", async (req, res) => {
-  try {
-    console.log("Fetching patients...");
-    const patients = await Patient.find(
-      {},
-      "name phone gender age dob city address pin createdAt"
-    ); // Fetch all required fields
-    // console.log("Patients fetched:", patients);
-    res.json(patients);
-  } catch (err) {
-    console.error("Error fetching patients:", err);
     res.status(500).json({ error: err.message });
   }
 });

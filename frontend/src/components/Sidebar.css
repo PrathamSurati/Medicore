@@ -170,12 +170,13 @@ html {
 .secondary-sidebar {
   height: calc(100% - 60px); /* Adjust for the height of the bar */
   background-color: #ffffff;
-  padding: 1rem;
+  /* padding: 1rem; */
   padding-top: 0px;
   z-index: 1;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   overflow-y: auto;
+  scrollbar-width: none;
   position: fixed;
   top: 60px; /* Adjust for the height of the navbar */
   left: 250px; /* Adjust this line */

@@ -1,0 +1,245 @@
+.patient-details-wrapper {
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Patient Info Navbar */
+.patient-info-navbar {
+  background-color: #fff;
+  padding: 15px 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 280px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.primary-sidebar.collapsed ~ .app-content .patient-info-navbar {
+  margin-left: 100px;
+}
+
+.patient-info-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.patient-avatar {
+  width: 50px;
+  height: 50px;
+  background-color: #4a90e2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.patient-basic-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.patient-basic-info h2 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.patient-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.patient-info-tag {
+  background-color: #f0f7ff;
+  color: #4a90e2;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.patient-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.edit-button {
+  background-color: #f0f7ff;
+  color: #4a90e2;
+}
+
+.edit-button:hover {
+  background-color: #e0f0ff;
+}
+
+.print-button {
+  background-color: #f0f0f0;
+  color: #555;
+}
+
+.print-button:hover {
+  background-color: #e5e5e5;
+}
+
+/* Loading and Error states */
+.patient-loading, .patient-error, .patient-not-found {
+  text-align: center;
+  padding: 30px;
+  font-size: 18px;
+  color: #666;
+  margin-left: 280px;
+}
+
+.primary-sidebar.collapsed ~ .app-content .patient-loading,
+.primary-sidebar.collapsed ~ .app-content .patient-error,
+.primary-sidebar.collapsed ~ .app-content .patient-not-found {
+  margin-left: 150px;
+}
+
+.patient-error {
+  color: #e74c3c;
+}
+
+/* Media queries */
+@media (max-width: 1200px) {
+  .patient-info-navbar,
+  .patient-loading,
+  .patient-error,
+  .patient-not-found {
+    margin-left: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .patient-info-navbar,
+  .patient-loading,
+  .patient-error,
+  .patient-not-found {
+    margin-left: 70px;
+  }
+  
+  .patient-actions {
+    display: none;
+  }
+}
+
+/* Add these styles to your existing PatientDetails.css */
+
+.patient-report-section {
+  background-color: #fff;
+  margin-left: 280px;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.primary-sidebar.collapsed ~ .app-content .patient-report-section {
+  margin-left: 100px;
+}
+
+.report-section-title {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.report-components {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-right: 5px;
+}
+
+.report-component-section {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.report-component-section h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #4a90e2;
+}
+
+.report-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.save-report-btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-report-btn:hover {
+  background-color: #3a80d2;
+}
+
+.save-status {
+  font-size: 14px;
+  color: #4a90e2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .patient-report-section {
+    margin-left: 100px;
+    max-height: calc(100vh - 140px);
+  }
+}
+
+@media (max-width: 768px) {
+  .patient-report-section {
+    margin-left: 70px;
+    max-height: calc(100vh - 130px);
+  }
+}
+
+/* Add smooth scrolling to the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-y: auto;
+} 

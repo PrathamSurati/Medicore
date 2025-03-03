@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import signoutButton from "../assets/images/signout_button.png";
 import addPatientIcon from "../assets/images/add.png";
 import addBillIcon from "../assets/images/bill.png";
@@ -13,7 +13,7 @@ import saveIcon from "../assets/images/save.png";
 import "./Sidebar.css";
 import PropTypes from "prop-types";
 
-const Sidebar = ({ onAddClick, activeSection, setActiveSection }) => {
+const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [patients, setPatients] = useState([]);
@@ -21,42 +21,33 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch the patients from your API
-    fetch('http://localhost:8081/api/patients')
+    fetch("http://localhost:8081/api/patients")
       .then(response => {
-        console.log('Response:', response);
+        if (!response.ok) throw new Error('Failed to fetch patients');
+        return response.json();
+      })
+      .then(data => setPatients(data))
+      .catch(err => setError(err.message));
+
+    fetch('http://localhost:8081/api/prescriptions')
+      .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
         return response.json();
       })
       .then(data => {
-        console.log('Data:', data);
-        setPatients(data);
+        setPrescriptions(data);
       })
       .catch(error => {
-        console.error('Error fetching patients:', error);
         setError(error.toString());
       });
-
-
-
-      fetch('http://localhost:8081/api/prescriptions')
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-            setPrescriptions(data);
-          })
-          .catch(error => {
-            setError(error.toString());
-          });
   }, []);
 
-
+  const handlePatientClick = (patientId) => {
+    console.log('Patient clicked with ID:', patientId);
+    navigate(`/patients/${patientId}`);
+  };
 
   const menuItems = [
     { id: "Add patient", label: "Add patient", icon: addPatientIcon }, // Change id to match route
@@ -66,8 +57,6 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection }) => {
     { id: "saveTemplate", label: "Save Template", icon: saveIcon }, 
     { id: "settings", label: "Settings", icon: settingsIcon },
   ];
-
-
 
   const handleSearch = useCallback((e) => {
     setSearchTerm(e.target.value);
@@ -187,7 +176,7 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection }) => {
               <div className="no-results">No patients found</div>
             ) : (
               filteredPatients.map((patient, index) => (
-                <div key={patient._id} className="patient-card">
+                <div key={patient._id} className="patient-card" onClick={() => handlePatientClick(patient._id)}>
                   <h4>
                     {index + 1}. {patient.name}
                   </h4>
@@ -238,6 +227,7 @@ Sidebar.propTypes = {
   onAddClick: PropTypes.func.isRequired,
   activeSection: PropTypes.string,
   setActiveSection: PropTypes.func.isRequired,
+  navigate: PropTypes.func.isRequired,
 };
 
 export default Sidebar;
