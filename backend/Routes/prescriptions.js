@@ -30,4 +30,23 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Get a single prescription by ID
+router.get("/:id", async (req, res) => {
+  try {
+    console.log(`Fetching prescription with ID: ${req.params.id}`);
+    const prescription = await Prescription.findById(req.params.id);
+    
+    if (!prescription) {
+      console.log('Prescription not found in database');
+      return res.status(404).json({ message: 'Prescription not found' });
+    }
+    
+    console.log('Sending prescription data');
+    res.json(prescription);
+  } catch (error) {
+    console.error('Error fetching prescription by ID:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
