@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "./PatientDetails.css"; // Create this file for styling
 import axios from "axios";
@@ -136,10 +136,17 @@ const PatientDetails = () => {
       date: new Date(),
     };
 
+    // Check if any fields are filled before saving
+    const isEmpty = !vitals.some(v => v.value) && !complaints.length && !diagnosis.length && !medicines.length && !date && !title.trim();
+    if (isEmpty) {
+      alert("Cannot save empty report.");
+      return;
+    }
+
     // Send a POST request to your backend API to save the report data
     try {
       const response = await axios.post(
-        `http://localhost:8081/api/reports/${patientId}`,
+        `http://localhost:8081/api/patients/${patientId}/details`,
         reportData
       );
       console.log('Report saved successfully:', response.data);
@@ -206,6 +213,18 @@ const PatientDetails = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
+  const savePatientDetailsToDatabase = async (patientData) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:8081/api/patients/${patientId}/details`,
+        patientData
+      );
+      console.log('Patient details saved successfully:', response.data);
+    } catch (error) {
+      console.error('Error saving patient details:', error);
+    }
+  };
+
   if (loading) return <div className="patient-loading">Loading...</div>;
   if (error) return <div className="patient-error">Error: {error}</div>;
 
@@ -248,7 +267,7 @@ const PatientDetails = () => {
               >
                 <path
                   fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z"
                   clipRule="evenodd"
                 />
               </svg>

@@ -70,12 +70,35 @@ app.get("/api/patients/:id", async (req, res) => {
 app.get("/api/prescriptions", async (req, res) => {
   try {
     console.log("Fetching prescription titles...");
-    const prescriptions = await require("./Models/Prescription").find({}, "title");
+    const Prescription = mongoose.models.Prescription || require("./models/Prescription");
+    const prescriptions = await Prescription.find({}, "title");
     console.log("Prescription titles fetched:", prescriptions);
     res.json(prescriptions);
   } catch (err) {
     console.error("Error fetching prescription titles:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// API Route to Save Patient Details
+app.post("/api/patients/:id/details", async (req, res) => {
+  try {
+    const patientId = req.params.id;
+    const patientDetails = req.body;
+
+    // Assuming you have a PatientDetails model
+    const PatientDetails = require("./Models/PatientDetails");
+
+    const newPatientDetails = new PatientDetails({
+      ...patientDetails,
+      patientId,
+    });
+
+    await newPatientDetails.save();
+    res.status(201).json(newPatientDetails);
+  } catch (error) {
+    console.error("Error saving patient details:", error);
+    res.status(500).json({ message: error.message });
   }
 });
 

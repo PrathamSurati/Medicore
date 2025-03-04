@@ -1,11 +1,11 @@
 .patient-details-wrapper {
   width: 100%; /* Adjust this width as needed */
   position: relative;
-  z-index: 3; /* Increase this value to ensure the patient details wrapper is stacked above the sidebar */
+  z-index: 30; /* Increase this value to ensure the patient details wrapper is stacked above the sidebar */
   display: flex;
   flex-direction: column;
   height: calc(100vh - 80px); /* Fixed height based on viewport, minus some space for header */
-  margin-right: 10px;
+  /* margin-right: 10px; */
   overflow-y: auto; /* Enable vertical scrolling */
   scrollbar-width: none; /* Slim scrollbar for modern browsers */
 }
@@ -20,6 +20,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  
   margin-left: 0;
   position: sticky;
   top: 0;
