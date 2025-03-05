@@ -3,6 +3,17 @@ import { useParams } from "react-router-dom";
 import "./PatientDetails.css"; // Create this file for styling
 import axios from "axios";
 
+// Import MUI Timeline components
+import Timeline from '@mui/lab/Timeline';
+import TimelineItem from '@mui/lab/TimelineItem';
+import TimelineSeparator from '@mui/lab/TimelineSeparator';
+import TimelineConnector from '@mui/lab/TimelineConnector';
+import TimelineContent from '@mui/lab/TimelineContent';
+import TimelineDot from '@mui/lab/TimelineDot';
+import TimelineOppositeContent, {
+  timelineOppositeContentClasses,
+} from '@mui/lab/TimelineOppositeContent';
+
 // Import report components
 import ComplaintsComponent from "./Report/Complaints/Complains";
 import DiagnosisComponent from "./Report/Diagnosis/Diagnosis";
@@ -27,6 +38,10 @@ const PatientDetails = () => {
   const [error, setError] = useState(null);
   const [templates, setTemplates] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [patientHistory, setPatientHistory] = useState([]);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [recordLoading, setRecordLoading] = useState(false);
+  const [recordError, setRecordError] = useState(null);
 
   const [vitals, setVitals] = useState(defaultVitals);
   const [diagnosis, setDiagnosis] = useState([]);
@@ -75,6 +90,17 @@ const PatientDetails = () => {
       })
       .catch((error) => {
         console.error("Failed to fetch templates:", error);
+      });
+      
+    // Fetch patient history
+    axios
+      .get(`http://localhost:8081/api/patients/${patientId}/history`)
+      .then((response) => {
+        console.log("Fetched patient history:", response.data);
+        setPatientHistory(response.data || []);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch patient history:", error);
       });
   }, [patientId]); // This effect runs when patientId changes
 
@@ -225,6 +251,47 @@ const PatientDetails = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    });
+  };
+
+  // Enhanced function to handle timeline dot click - fetch complete record data
+  const handleTimelineDotClick = async (record) => {
+    // If clicking the same record, close it
+    if (selectedRecord && selectedRecord._id === record._id) {
+      setSelectedRecord(null);
+      return;
+    }
+    
+    // Show loading while fetching record details
+    setRecordLoading(true);
+    setRecordError(null);
+    
+    try {
+      // Fetch the complete record data (in case the timeline data is incomplete)
+      const response = await axios.get(
+        `http://localhost:8081/api/patients/${patientId}/records/${record._id}`
+      );
+      console.log("Fetched detailed record:", response.data);
+      setSelectedRecord(response.data);
+    } catch (error) {
+      console.error("Error fetching record details:", error);
+      setRecordError("Failed to load record details. Please try again.");
+      // Use the basic record data from timeline as fallback
+      setSelectedRecord(record);
+    } finally {
+      setRecordLoading(false);
+    }
+  };
+
   if (loading) return <div className="patient-loading">Loading...</div>;
   if (error) return <div className="patient-error">Error: {error}</div>;
 
@@ -297,23 +364,187 @@ const PatientDetails = () => {
         </div>
       </div>
 
-      {/* Report Components with proper responsive container */}
-      {/* <div className="report-component">
-        <TitleComponent title={title} setTitle={setTitle} />
-      </div> */}
+      {/* Main content area with timeline and report components side by side */}
+      <div className="patient-content-container">
+        {/* Patient History Timeline - Always visible on the left */}
+        <div className="patient-timeline-container">
+          <h3>Patient History</h3>
+          <Timeline
+            sx={{
+              [`& .${timelineOppositeContentClasses.root}`]: {
+                flex: 0.2,
+              },
+            }}
+          >
+            {patientHistory.length > 0 ? (
+              patientHistory.map((record) => (
+                <TimelineItem key={record._id}>
+                  <TimelineOppositeContent color="textSecondary">
+                    {formatDate(record.date)}
+                  </TimelineOppositeContent>
+                  <TimelineSeparator>
+                    <TimelineDot 
+                      onClick={() => handleTimelineDotClick(record)}
+                      sx={{ 
+                        cursor: 'pointer',
+                        backgroundColor: selectedRecord && selectedRecord._id === record._id ? '#4a90e2' : undefined,
+                        '&:hover': { backgroundColor: '#4a90e2' }
+                      }}
+                    />
+                    {/* Don't add connector to last item */}
+                    {patientHistory.indexOf(record) < patientHistory.length - 1 && <TimelineConnector />}
+                  </TimelineSeparator>
+                  <TimelineContent>
+                    <div 
+                      className={`timeline-content ${selectedRecord && selectedRecord._id === record._id ? 'selected' : ''}`}
+                      onClick={() => handleTimelineDotClick(record)}
+                    >
+                      <h4>{record.title || 'Patient Visit'}</h4>
+                      {record.diagnosis && record.diagnosis.length > 0 && (
+                        <p><strong>Diagnosis:</strong> {record.diagnosis.join(', ')}</p>
+                      )}
+                      {record.medicines && record.medicines.length > 0 && (
+                        <p><strong>Medications:</strong> {record.medicines.length} prescribed</p>
+                      )}
+                    </div>
+                  </TimelineContent>
+                </TimelineItem>
+              ))
+            ) : (
+              <TimelineItem>
+                <TimelineSeparator>
+                  <TimelineDot />
+                </TimelineSeparator>
+                <TimelineContent>No previous visits recorded</TimelineContent>
+              </TimelineItem>
+            )}
+          </Timeline>
+        </div>
 
-      <div className="report-component">
-        <VitalsComponent vitals={vitals} setVitals={setVitals} />
-        <ComplaintsComponent
-          complaints={complaints}
-          setComplaints={setComplaints}
-        />
-        <DiagnosisComponent diagnosis={diagnosis} setDiagnosis={setDiagnosis} />
-        <MedicinesComponent medicines={medicines} setMedicines={setMedicines} />
-        <NextVisitComponent date={date} setDate={setDate} />
-        <button className="save-report-btn" onClick={handleSaveReport}>
-          Save Report
-        </button>
+        {/* Report Components container - on the right */}
+        <div className="report-container">
+          {recordLoading ? (
+            <div className="record-loading">
+              <p>Loading record data...</p>
+            </div>
+          ) : recordError ? (
+            <div className="record-error">
+              <p>{recordError}</p>
+              <button 
+                className="retry-btn" 
+                onClick={() => handleTimelineDotClick(selectedRecord)}
+              >
+                Retry
+              </button>
+            </div>
+          ) : selectedRecord ? (
+            <div className="selected-record-container">
+              <div className="selected-record-header">
+                <h3>{selectedRecord.title || 'Patient Visit'}</h3>
+                <span className="record-date">{formatDate(selectedRecord.date)}</span>
+                <button className="close-record-btn" onClick={() => setSelectedRecord(null)}>
+                  &times;
+                </button>
+              </div>
+              <div className="selected-record-content">
+                {/* Vitals Section */}
+                {selectedRecord.vitals && selectedRecord.vitals.length > 0 && selectedRecord.vitals.some(v => v.value) && (
+                  <div className="record-section">
+                    <h4>Vitals</h4>
+                    <ul className="vitals-list">
+                      {selectedRecord.vitals.map((vital, index) => (
+                        vital.value && (
+                          <li key={index}>
+                            <span className="vital-name">{vital.name}:</span> {vital.value}
+                          </li>
+                        )
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {/* Complaints Section */}
+                {selectedRecord.complaints && selectedRecord.complaints.length > 0 && (
+                  <div className="record-section">
+                    <h4>Complaints</h4>
+                    <ul className="complaints-list">
+                      {selectedRecord.complaints.map((complaint, index) => (
+                        <li key={index}>{complaint}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {/* Diagnosis Section */}
+                {selectedRecord.diagnosis && selectedRecord.diagnosis.length > 0 && (
+                  <div className="record-section">
+                    <h4>Diagnosis</h4>
+                    <ul className="diagnosis-list">
+                      {selectedRecord.diagnosis.map((diagnosis, index) => (
+                        <li key={index}>{diagnosis}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {/* Medicines Section */}
+                {selectedRecord.medicines && selectedRecord.medicines.length > 0 && (
+                  <div className="record-section">
+                    <h4>Medications</h4>
+                    <ul className="medicines-list">
+                      {selectedRecord.medicines.map((medicine, index) => (
+                        <li key={index}>
+                          <div className="medicine-name">{medicine.name}</div>
+                          <div className="medicine-details">
+                            {medicine.dosage && <span className="medicine-dosage">{medicine.dosage}</span>}
+                            {medicine.frequency && <span className="medicine-frequency">{medicine.frequency}</span>}
+                            {medicine.duration && <span className="medicine-duration">for {medicine.duration}</span>}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {/* Next Visit Section */}
+                {selectedRecord.nextVisit && (
+                  <div className="record-section">
+                    <h4>Next Visit</h4>
+                    <p>{new Date(selectedRecord.nextVisit).toLocaleDateString()}</p>
+                  </div>
+                )}
+              </div>
+              <div className="selected-record-actions">
+                <button className="load-record-btn" onClick={() => {
+                  // Load the selected record data into the form
+                  setVitals(selectedRecord.vitals && selectedRecord.vitals.length > 0 
+                    ? selectedRecord.vitals 
+                    : [...defaultVitals]);
+                  setComplaints(selectedRecord.complaints || []);
+                  setDiagnosis(selectedRecord.diagnosis || []);
+                  setMedicines(selectedRecord.medicines || []);
+                  setDate(selectedRecord.nextVisit || '');
+                  setTitle(selectedRecord.title || '');
+                  setSelectedRecord(null); // Close the record view
+                }}>
+                  Use as Template
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Show the form if no record is selected
+            <div className="report-component">
+              <VitalsComponent vitals={vitals} setVitals={setVitals} />
+              <ComplaintsComponent complaints={complaints} setComplaints={setComplaints} />
+              <DiagnosisComponent diagnosis={diagnosis} setDiagnosis={setDiagnosis} />
+              <MedicinesComponent medicines={medicines} setMedicines={setMedicines} />
+              <NextVisitComponent date={date} setDate={setDate} />
+              <button className="save-report-btn" onClick={handleSaveReport}>
+                Save Report
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

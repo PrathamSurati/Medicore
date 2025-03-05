@@ -1,13 +1,19 @@
 .patient-details-wrapper {
-  width: 100%; /* Adjust this width as needed */
+  width: calc(100% - 250px); /* Subtract the width of expanded sidebar */
+  margin-left: 250px; /* Add margin equal to expanded sidebar width */
   position: relative;
-  z-index: 30; /* Increase this value to ensure the patient details wrapper is stacked above the sidebar */
+  z-index: 30;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px); /* Fixed height based on viewport, minus some space for header */
-  /* margin-right: 10px; */
-  overflow-y: auto; /* Enable vertical scrolling */
-  scrollbar-width: none; /* Slim scrollbar for modern browsers */
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+/* Adjust when sidebar is collapsed */
+.primary-sidebar.collapsed ~ .app-content .patient-details-wrapper {
+  width: calc(100% - 60px); /* Subtract the width of collapsed sidebar */
+  margin-left: 60px; /* Add margin equal to collapsed sidebar width */
 }
 
 /* Patient Info Navbar */
@@ -29,7 +35,7 @@
 }
 
 .primary-sidebar.collapsed ~ .app-content .patient-info-navbar {
-  margin-left: 100px;
+  margin-left: 0;
 }
 
 .patient-info-container {
@@ -145,7 +151,7 @@
 /* Added styling for all report components */
 .report-component {
   background-color: #fff;
-  margin-left: 0;
+  margin-left: 0; /* Remove left margin */
   margin-right: 0;
   margin-top: 15px;
   padding: 20px;
@@ -155,7 +161,7 @@
 }
 
 .primary-sidebar.collapsed ~ .app-content .report-component {
-  margin-left: 100px;
+  margin-left: 0; /* Remove left margin */
 }
 
 .primary-sidebar.collapsed ~ .app-content .patient-report-section {
@@ -213,9 +219,9 @@
   margin-bottom: 20px;
 }
 
-.primary-sidebar.collapsed ~ .app-content .save-report-btn {
+/* .primary-sidebar.collapsed ~ .app-content .save-report-btn {
   margin-left: 100px;
-}
+} */
 
 .save-report-btn:hover {
   background-color: #3a80d2;
@@ -224,6 +230,206 @@
 .save-status {
   font-size: 14px;
   color: #4a90e2;
+}
+
+/* Timeline Styles */
+.patient-timeline-container {
+  flex: 0 0 250px; /* Slightly wider for better readability */
+  min-width: 250px; /* Ensure minimum width */
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 10px;
+  /* padding-left: 0px; */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  max-height: 100%;
+  scrollbar-width: none;
+  /* margin-left: 10px;  */
+}
+
+.patient-timeline-container h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.history-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.history-button:hover {
+  background-color: #5a6268;
+}
+
+.timeline-content h4 {
+  margin: 0 0 5px 0;
+  color: #2c3e50;
+}
+
+.timeline-content p {
+  margin: 3px 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Timeline interactive styles */
+.timeline-content {
+  cursor: pointer;
+  transition: background-color 0.2s;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.timeline-content:hover {
+  background-color: rgba(74, 144, 226, 0.05);
+}
+
+.timeline-content.selected {
+  background-color: rgba(74, 144, 226, 0.1);
+  border-left: 3px solid #4a90e2;
+}
+
+/* Selected record display styles */
+.selected-record-container {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.selected-record-header {
+  background-color: #f8f9fa;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.selected-record-header h3 {
+  margin: 0;
+  flex: 1;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.record-date {
+  color: #666;
+  font-size: 0.9rem;
+  margin-right: 20px;
+}
+
+.close-record-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #666;
+  padding: 0 8px;
+}
+
+.close-record-btn:hover {
+  color: #333;
+}
+
+.selected-record-content {
+  padding: 20px;
+}
+
+.record-section {
+  margin-bottom: 20px;
+}
+
+.record-section h4 {
+  color: #4a90e2;
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.record-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.record-section li {
+  margin-bottom: 5px;
+  padding: 5px 0;
+}
+
+.vitals-list li {
+  display: inline-block;
+  margin-right: 15px;
+  background-color: #f8f9fa;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.vital-name {
+  font-weight: 500;
+  color: #4a90e2;
+}
+
+.complaints-list li, .diagnosis-list li {
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.medicines-list li {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.medicine-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.medicine-details {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.medicine-details span {
+  margin-right: 10px;
+}
+
+.selected-record-actions {
+  padding: 10px 20px 20px;
+  text-align: right;
+}
+
+.load-record-btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.load-record-btn:hover {
+  background-color: #3a80d2;
 }
 
 /* Media queries */
@@ -235,11 +441,27 @@
   .report-component,
   .patient-report-section,
   .save-report-btn {
-    margin-left: 100px;
+    margin-left: 0; /* Remove left margins */
   }
   
   .patient-report-section {
     max-height: calc(100vh - 140px);
+  }
+
+  .patient-timeline-container {
+    flex: 0 0 200px;
+    min-width: 180px;
+  }
+  
+  /* Ensure content fits on smaller screens */
+  .secondary-sidebar ~ .app-content .patient-details-wrapper {
+    width: calc(100% - 400px);
+    margin-left: 400px;
+  }
+  
+  .primary-sidebar.collapsed + .secondary-sidebar ~ .app-content .patient-details-wrapper {
+    width: calc(100% - 260px);
+    margin-left: 260px;
   }
 }
 
@@ -273,6 +495,17 @@
   .save-report-btn {
     width: calc(100% - 90px);
     margin-right: 10px;
+  }
+
+  .patient-details-wrapper {
+    width: calc(100% - 60px);
+    margin-left: 60px;
+  }
+  
+  .secondary-sidebar ~ .app-content .patient-details-wrapper {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 60px; /* Add space for floating secondary sidebar */
   }
 }
 
@@ -420,4 +653,133 @@ body {
   .patient-actions {
     display: flex; /* Keep the actions visible */
   }
-} 
+}
+
+/* New layout styles for side-by-side timeline and report */
+.patient-content-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  height: calc(100vh - 120px); /* Adjust height as needed */
+  overflow: hidden;
+  width: 100%; /* Use full width of parent container */
+  padding-right: 20px;
+  box-sizing: border-box;
+}
+
+.report-container {
+  flex: 1; /* Take remaining space */
+  overflow-y: auto;
+  padding-right: 10px;
+  padding-left: 0px;
+  min-width: 0; /* Allow flex item to shrink below content size if needed */
+}
+
+.patient-timeline-container h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.timeline-content h4 {
+  margin: 0 0 5px 0;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.timeline-content p {
+  margin: 3px 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Adjust save button positioning */
+.save-report-btn {
+  margin-left: 0;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Make timeline responsive */
+@media (max-width: 992px) {
+  .patient-content-container {
+    flex-direction: column;
+  }
+  
+  .patient-timeline-container {
+    flex: 0 0 auto;
+    max-height: 300px;
+    width: calc(100% - 30px);
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+/* Secondary sidebar consideration - move content right when secondary sidebar is visible */
+.secondary-sidebar ~ .app-content .patient-details-wrapper {
+  width: calc(100% - 280px); /* 250px for primary + ~250px for secondary */
+  margin-left: 280px; /* Combined width of both sidebars */
+}
+
+.primary-sidebar.collapsed + .secondary-sidebar ~ .app-content .patient-details-wrapper {
+  width: calc(100% - 90px); /* 60px for collapsed primary + ~250px for secondary */
+  margin-left: 90px; /* Combined width of both sidebars */
+}
+
+/* New styles for no history message */
+.no-history-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+/* Loading and error states for records */
+.record-loading, .record-error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  text-align: center;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+}
+
+.record-loading p {
+  color: #4a90e2;
+  font-size: 1rem;
+  margin-top: 15px;
+}
+
+.record-error p {
+  color: #e74c3c;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.retry-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.retry-btn:hover {
+  background-color: #5a6268;
+}

@@ -80,6 +80,26 @@ app.get("/api/prescriptions", async (req, res) => {
   }
 });
 
+// API Route to Fetch Patient History
+app.get("/api/patients/:id/history", async (req, res) => {
+  try {
+    const patientId = req.params.id;
+    console.log(`Fetching history for patient ID: ${patientId}`);
+    
+    const PatientDetails = require("./Models/PatientDetails");
+    const history = await PatientDetails.find(
+      { patientId: patientId },
+      "title diagnosis medicines complaints vitals nextVisit date"
+    ).sort({ date: -1 }); // Sort by date in descending order (newest first)
+    
+    console.log(`Found ${history.length} history records`);
+    res.json(history);
+  } catch (error) {
+    console.error("Error fetching patient history:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // API Route to Save Patient Details
 app.post("/api/patients/:id/details", async (req, res) => {
   try {
@@ -98,6 +118,31 @@ app.post("/api/patients/:id/details", async (req, res) => {
     res.status(201).json(newPatientDetails);
   } catch (error) {
     console.error("Error saving patient details:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// API Route to Fetch a Specific Patient Record
+app.get("/api/patients/:patientId/records/:recordId", async (req, res) => {
+  try {
+    const { patientId, recordId } = req.params;
+    console.log(`Fetching record ID: ${recordId} for patient ID: ${patientId}`);
+    
+    const PatientDetails = require("./Models/PatientDetails");
+    const record = await PatientDetails.findOne({ 
+      _id: recordId,
+      patientId: patientId 
+    });
+    
+    if (!record) {
+      console.log('Record not found');
+      return res.status(404).json({ message: 'Record not found' });
+    }
+    
+    console.log('Record found, sending data');
+    res.json(record);
+  } catch (error) {
+    console.error("Error fetching patient record:", error);
     res.status(500).json({ message: error.message });
   }
 });
