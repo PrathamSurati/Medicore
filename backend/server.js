@@ -70,7 +70,7 @@ app.get("/api/patients/:id", async (req, res) => {
 app.get("/api/prescriptions", async (req, res) => {
   try {
     console.log("Fetching prescription titles...");
-    const Prescription = mongoose.models.Prescription || require("./models/Prescription");
+    const Prescription = mongoose.models.Prescription || require("./Models/Prescription");
     const prescriptions = await Prescription.find({}, "title");
     console.log("Prescription titles fetched:", prescriptions);
     res.json(prescriptions);

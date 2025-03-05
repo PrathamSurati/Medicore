@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { getBillingData, updateBill, deleteBill } from './BillingService';
+import { getBillingData, updateBill, deleteBill, createBill } from './BillingService';
 import BillForm from './BillForm';
 import BillList from './Components/BillList'; // Make sure the import path is correct
 import './Billing.css';
 import PaymentForm from './Components/PaymentForm';
 import axios from 'axios';
+import AddBills from './Components/AddBills'; // Add this import
 
 const Billing = () => {
   const [bills, setBills] = useState([]);
@@ -70,6 +71,7 @@ const Billing = () => {
 
   useEffect(() => {
     fetchBills();
+    fetchPatients(); // Make sure we fetch patients data
   }, []);
 
   const handleAddBill = async (newBill) => {
@@ -172,7 +174,8 @@ const Billing = () => {
         <div className="loading">Loading billing data...</div>
       ) : (
         <BillList 
-          bills={bills} 
+          bills={bills}
+          patients={patients} 
           onEdit={handleViewBill} 
           onDelete={handleDeleteBill} 
           onPay={handlePayBill}
@@ -180,15 +183,7 @@ const Billing = () => {
       )}
 
       {showAddForm && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <BillForm 
-              onSubmit={handleAddBill}
-              onCancel={() => setShowAddForm(false)}
-              title="Create New Bill"
-            />
-          </div>
-        </div>
+        <AddBills onClose={() => setShowAddForm(false)} />
       )}
 
       {editBill && (
