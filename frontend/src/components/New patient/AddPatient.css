@@ -13,13 +13,15 @@
 }
 
 .add-patient-modal {
-  width: 400px;
+  width: 450px;
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 10px;
   background-color: rgba(245, 245, 245, 0.9);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .close-button {
@@ -108,6 +110,16 @@
 
 .btn-secondary {
   background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
 }
 
 p {
@@ -123,4 +135,162 @@ p a {
 
 p a:hover {
   text-decoration: underline;
+}
+
+/* Tab navigation */
+.tab-navigation {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-navigation button {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
+
+.tab-navigation button.active-tab {
+  color: #007bff;
+  border-bottom: 2px solid #007bff;
+}
+
+/* Search styles */
+.search-container {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.search-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  position: absolute;
+  right: 10px;
+  top: 35px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Search results */
+.search-results {
+  margin-top: 15px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 5px;
+}
+
+.search-results h3 {
+  margin: 0;
+  padding: 10px;
+  background-color: #f9f9f9;
+  font-size: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.patient-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.patient-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.patient-item:hover {
+  background-color: #f5f8ff;
+}
+
+.patient-item.selected {
+  background-color: #e6f2ff;
+  border-left: 3px solid #007bff;
+}
+
+.patient-info-main {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.patient-name {
+  font-weight: 600;
+}
+
+.patient-info-secondary {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: #666;
+}
+
+/* Selected patient */
+.selected-patient {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.selected-patient h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.patient-details {
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.patient-details div {
+  margin-bottom: 5px;
+}
+
+/* Appointment section */
+.appointment-section,
+.appointment-form {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.appointment-section h3,
+.appointment-form h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+/* No results */
+.no-results {
+  padding: 15px;
+  text-align: center;
+}
+
+.no-results p {
+  margin-bottom: 10px;
 }

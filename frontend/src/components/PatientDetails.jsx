@@ -66,6 +66,13 @@ const PatientDetails = () => {
     // Reset all form fields when switching patients
     resetFormFields();
 
+    // Clear selected record when switching patients
+    setSelectedRecord(null);
+    
+    // Reset loading and error states
+    setRecordLoading(false);
+    setRecordError(null);
+
     // Set loading to true when switching patients
     setLoading(true);
 
@@ -264,7 +271,13 @@ const PatientDetails = () => {
   };
 
   // Enhanced function to handle timeline dot click - fetch complete record data
-  const handleTimelineDotClick = async (record) => {
+  const handleTimelineDotClick = async (record, event) => {
+    // Prevent default browser behavior and event propagation
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     // If clicking the same record, close it
     if (selectedRecord && selectedRecord._id === record._id) {
       setSelectedRecord(null);
@@ -276,12 +289,18 @@ const PatientDetails = () => {
     setRecordError(null);
     
     try {
-      // Fetch the complete record data (in case the timeline data is incomplete)
+      // Fetch the complete record data for the same patient (ensure patientId is included in URL)
       const response = await axios.get(
         `http://localhost:8081/api/patients/${patientId}/records/${record._id}`
       );
       console.log("Fetched detailed record:", response.data);
-      setSelectedRecord(response.data);
+      
+      // Make sure the record belongs to the current patient
+      if (response.data.patientId === patientId) {
+        setSelectedRecord(response.data);
+      } else {
+        throw new Error("Record does not belong to current patient");
+      }
     } catch (error) {
       console.error("Error fetching record details:", error);
       setRecordError("Failed to load record details. Please try again.");
@@ -290,6 +309,165 @@ const PatientDetails = () => {
     } finally {
       setRecordLoading(false);
     }
+  };
+
+  // Add this function to handle printing
+  const handlePrint = () => {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    
+    // Get current date in readable format
+    const currentDate = new Date().toLocaleDateString();
+    
+    // Prepare HTML content for printing
+    let printContent = `
+      <html>
+        <head>
+          <title>Medical Report - ${patient.name}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+            .patient-info { margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+            .section { margin-bottom: 20px; }
+            .section-title { font-weight: bold; margin-bottom: 5px; }
+            .medicine-item { margin-bottom: 8px; }
+            .footer { margin-top: 50px; text-align: right; }
+            table { width: 100%; border-collapse: collapse; }
+            table td { padding: 5px; }
+            .vital-name { font-weight: bold; margin-right: 5px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Medical Report</h1>
+            <div>Date: ${currentDate}</div>
+          </div>
+          
+          <div class="patient-info">
+            <h2>${patient.name}</h2>
+            <div>
+              ${patient.age ? `Age: ${patient.age}` : ''}
+              ${patient.gender ? ` | Gender: ${patient.gender}` : ''}
+              ${patient.bloodGroup ? ` | Blood Group: ${patient.bloodGroup}` : ''}
+            </div>
+          </div>
+    `;
+    
+    // Add vitals section if there are any values
+    if (vitals.some(v => v.value)) {
+      printContent += `
+        <div class="section">
+          <div class="section-title">Vitals:</div>
+          <table>
+      `;
+      
+      vitals.forEach(vital => {
+        if (vital.value) {
+          printContent += `
+            <tr>
+              <td width="30%"><span class="vital-name">${vital.name}:</span></td>
+              <td>${vital.value}</td>
+            </tr>
+          `;
+        }
+      });
+      
+      printContent += `
+          </table>
+        </div>
+      `;
+    }
+    
+    // Add complaints section if there are any
+    if (complaints.length > 0) {
+      printContent += `
+        <div class="section">
+          <div class="section-title">Complaints:</div>
+          <ul>
+      `;
+      
+      complaints.forEach(complaint => {
+        printContent += `<li>${complaint}</li>`;
+      });
+      
+      printContent += `
+          </ul>
+        </div>
+      `;
+    }
+    
+    // Add diagnosis section if there are any
+    if (diagnosis.length > 0) {
+      printContent += `
+        <div class="section">
+          <div class="section-title">Diagnosis:</div>
+          <ul>
+      `;
+      
+      diagnosis.forEach(item => {
+        printContent += `<li>${item}</li>`;
+      });
+      
+      printContent += `
+          </ul>
+        </div>
+      `;
+    }
+    
+    // Add medicines section if there are any
+    if (medicines.length > 0) {
+      printContent += `
+        <div class="section">
+          <div class="section-title">Medications:</div>
+          <ul>
+      `;
+      
+      medicines.forEach(medicine => {
+        printContent += `
+          <li class="medicine-item">
+            <strong>${medicine.name}</strong>
+            ${medicine.dosage ? ` - ${medicine.dosage}` : ''}
+            ${medicine.frequency ? ` - ${medicine.frequency}` : ''}
+            ${medicine.duration ? ` - for ${medicine.duration}` : ''}
+          </li>
+        `;
+      });
+      
+      printContent += `
+          </ul>
+        </div>
+      `;
+    }
+    
+    // Add next visit date if available
+    if (date) {
+      printContent += `
+        <div class="section">
+          <div class="section-title">Next Visit:</div>
+          <p>${new Date(date).toLocaleDateString()}</p>
+        </div>
+      `;
+    }
+    
+    // Add footer
+    printContent += `
+          <div class="footer">
+            <p>Doctor's Signature: ____________________</p>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    // Write content to the new window and print
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    // Wait for content to load before printing
+    printWindow.onload = function() {
+      printWindow.print();
+      // Uncomment below if you want the print window to close after printing
+      // printWindow.onafterprint = function() { printWindow.close(); };
+    };
   };
 
   if (loading) return <div className="patient-loading">Loading...</div>;
@@ -360,7 +538,7 @@ const PatientDetails = () => {
               )}
             </div>
           </div>
-          <button className="action-button print-button">Print</button>
+          <button className="action-button print-button" onClick={handlePrint}>Print</button>
         </div>
       </div>
 
@@ -384,7 +562,7 @@ const PatientDetails = () => {
                   </TimelineOppositeContent>
                   <TimelineSeparator>
                     <TimelineDot 
-                      onClick={() => handleTimelineDotClick(record)}
+                      onClick={(e) => handleTimelineDotClick(record, e)}
                       sx={{ 
                         cursor: 'pointer',
                         backgroundColor: selectedRecord && selectedRecord._id === record._id ? '#4a90e2' : undefined,
@@ -397,7 +575,7 @@ const PatientDetails = () => {
                   <TimelineContent>
                     <div 
                       className={`timeline-content ${selectedRecord && selectedRecord._id === record._id ? 'selected' : ''}`}
-                      onClick={() => handleTimelineDotClick(record)}
+                      onClick={(e) => handleTimelineDotClick(record, e)}
                     >
                       <h4>{record.title || 'Patient Visit'}</h4>
                       {record.diagnosis && record.diagnosis.length > 0 && (

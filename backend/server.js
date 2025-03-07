@@ -33,6 +33,18 @@ app.use("/api", AuthRouter);
 app.use("/prescriptions", require("./Routes/prescriptions"));
 app.use("/api/bills", billRoutes);
 
+// Import patient routes
+const patientRoutes = require('./routes/patientRoutes');
+
+// Register the patient routes
+app.use('/api/patients', patientRoutes);
+
+// Import appointment routes
+const appointmentRoutes = require('./routes/appointmentRoutes');
+
+// Register appointment routes
+app.use('/api/appointments', appointmentRoutes);
+
 // API Route to Fetch All Patients
 app.get("/api/patients", async (req, res) => {
   try {

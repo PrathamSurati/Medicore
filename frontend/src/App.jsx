@@ -10,6 +10,8 @@ import Dashboard from './Dashboard/Dashboard';
 import AddBills from './Billing/Components/AddBills';
 import Billing from "./Billing/Billing";
 import PatientDetails from './components/PatientDetails';
+// Import admin routes
+// import AdminRoutes from './AdminRoutes';
 
 // Wrapper component to access location
 const AppContent = () => {
@@ -83,6 +85,11 @@ const AppContent = () => {
           <Route path="/billing" element={<Billing />} />
           <Route path="/AddBills" element={<AddBills />} />
           <Route path="/patients/:patientId" element={<PatientDetails />} />
+          
+          {/* Include other app routes as needed */}
+          
+          {/* This route handles all admin/* paths and drops back into normal routing for non-admin paths */}
+          {/* <Route path="/admin" element={<AdminRoutes />} /> */}
         </Routes>
       </div>
       <AddPatientModal isOpen={isModalOpen} onClose={handleCloseModal} />

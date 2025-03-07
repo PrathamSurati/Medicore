@@ -17,6 +17,7 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [patients, setPatients] = useState([]);
+  const [appointments, setAppointments] = useState([]); // Add state for appointments
   const [prescriptions, setPrescriptions] = useState([]); 
   const [error, setError] = useState(null);
 
@@ -27,6 +28,15 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
         return response.json();
       })
       .then(data => setPatients(data))
+      .catch(err => setError(err.message));
+
+    // Fetch appointments
+    fetch("http://localhost:8081/api/appointments")
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch appointments');
+        return response.json();
+      })
+      .then(data => setAppointments(data))
       .catch(err => setError(err.message));
 
     fetch('http://localhost:8081/api/prescriptions')
@@ -49,10 +59,20 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
     navigate(`/patients/${patientId}`);
   };
 
+  // New function to handle appointment click
+  const handleAppointmentClick = (appointmentId) => {
+    console.log('Appointment clicked with ID:', appointmentId);
+    // Navigate to appointment details or related patient
+    const appointment = appointments.find(apt => apt._id === appointmentId);
+    if (appointment && appointment.patientId) {
+      navigate(`/patients/${appointment.patientId}`);
+    }
+  };
+
   const menuItems = [
-    { id: "Add patient", label: "Add patient", icon: addPatientIcon }, // Change id to match route
+    { id: "Add patient", label: "Add patient", icon: addPatientIcon },
     { id: "AddBills", label: "Add Bills", icon: addBillIcon },
-    { id: "patients", label: "Patients", icon: patientsIcon },
+    { id: "appointments", label: "Appointments", icon: patientsIcon }, // Changed label to "Appointments" 
     { id: "reports", label: "Reports", icon: reportsIcon },
     { id: "saveTemplate", label: "Save Template", icon: saveIcon }, 
     { id: "settings", label: "Settings", icon: settingsIcon },
@@ -62,19 +82,34 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
     setSearchTerm(e.target.value);
   }, []);
 
+  // Filter patients based on search term
   const filteredPatients = patients
     .filter((patient) =>
       patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+  // Filter appointments based on search term
+  const filteredAppointments = appointments
+    .filter((appointment) =>
+      (appointment.patientName && appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (appointment.title && appointment.title.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  // Format date helper function
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
     <>
-      {/* <div className="app-container"> */}
       <div className={`primary-sidebar ${isCollapsed ? "collapsed" : ""}`}>
+        {/* ...existing sidebar header and search... */}
         <div className="upperContent">
           <div className="sidebar-header">
             <h1 className="app-title">
@@ -82,7 +117,7 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
             </h1>
             <button className="collapse-button" onClick={handleToggleSidebar}>
               <img
-                src={isCollapsed ? leftArrow : rightArrow}
+                src={isCollapsed ? rightArrow : leftArrow}
                 alt="arrows"
                 style={{ height: "30px", width: "25px" }}
               />
@@ -134,6 +169,7 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
           </ul>
         </div>
 
+        {/* ...existing profile section... */}
         <div className="profile-signout-container">
           <div className={`user-profile ${isCollapsed ? "collapsed" : ""}`}>
             <div className="avatar">👨‍⚕️</div>
@@ -157,32 +193,42 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
         </div>
       </div>
 
-      {activeSection === "patients" && (
+      {/* Modified: Display appointments instead of patients */}
+      {activeSection === "appointments" && (
         <aside className="secondary-sidebar">
           <div className="search-container">
             <input
               type="text"
-              placeholder="Search patients..."
+              placeholder="Search appointments..."
               value={searchTerm}
               onChange={handleSearch}
               className="search-input"
             />
           </div>
 
-          <div className="patients-list">
+          <div className="appointments-list">
             {error ? (
               <div className="error-message">{error}</div>
-            ) : filteredPatients.length === 0 ? (
-              <div className="no-results">No patients found</div>
+            ) : filteredAppointments.length === 0 ? (
+              <div className="no-results">No appointments found</div>
             ) : (
-              filteredPatients.map((patient, index) => (
-                <div key={patient._id} className="patient-card" onClick={() => handlePatientClick(patient._id)}>
+              filteredAppointments.map((appointment, index) => (
+                <div 
+                  key={appointment._id} 
+                  className="appointment-card"
+                  onClick={() => handleAppointmentClick(appointment._id)}
+                >
                   <h4>
-                    {index + 1}. {patient.name}
+                    {appointment.patientName || "Unnamed Patient"}
                   </h4>
-                  <p>
-                    <small>Created At: {new Date(patient.createdAt).toLocaleString()}</small>
-                  </p>
+                  <div className="appointment-info">
+                    <div><strong>Date:</strong></div>
+                    <div>{formatDate(appointment.startTime).split(' ')[0]}</div>
+                  </div>
+                  
+                  <div className="appointment-time">
+                    {formatDate(appointment.startTime).split(' ')[1]} - {appointment.endTime ? formatDate(appointment.endTime).split(' ')[1] : ''}
+                  </div>
                 </div>
               ))
             )}
@@ -217,8 +263,6 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
             </div>
         </aside>
       )}
-
-      {/* </div> */}
     </>
   );
 };

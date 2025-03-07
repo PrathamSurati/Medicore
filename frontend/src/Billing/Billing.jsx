@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { getBillingData, updateBill, deleteBill, createBill } from './BillingService';
+import { getBillingData, updateBill, deleteBill } from './BillingService';
 import BillForm from './BillForm';
 import BillList from './Components/BillList'; // Make sure the import path is correct
 import './Billing.css';
 import PaymentForm from './Components/PaymentForm';
 import axios from 'axios';
-import AddBills from './Components/AddBills'; // Add this import
+import { useNavigate } from 'react-router-dom'; // Add this import
 
 const Billing = () => {
   const [bills, setBills] = useState([]);
@@ -15,6 +15,7 @@ const Billing = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editBill, setEditBill] = useState(null);
   const [paymentBill, setPaymentBill] = useState(null); // Add this missing state
+  const navigate = useNavigate(); // Add this hook
 
   const [stats, setStats] = useState({
     totalBills: 0,
@@ -71,7 +72,6 @@ const Billing = () => {
 
   useEffect(() => {
     fetchBills();
-    fetchPatients(); // Make sure we fetch patients data
   }, []);
 
   const handleAddBill = async (newBill) => {
@@ -144,7 +144,10 @@ const Billing = () => {
     <div className="billing-container">
       <div className="billing-header">
         <h1>Billing Management</h1>
-        <button className="add-bill-btn" onClick={() => setShowAddForm(true)}>
+        <button 
+          className="add-bill-btn" 
+          onClick={() => navigate('/AddBills')} // Change this line to navigate to AddBills
+        >
           Create New Bill
         </button>
       </div>
@@ -174,8 +177,7 @@ const Billing = () => {
         <div className="loading">Loading billing data...</div>
       ) : (
         <BillList 
-          bills={bills}
-          patients={patients} 
+          bills={bills} 
           onEdit={handleViewBill} 
           onDelete={handleDeleteBill} 
           onPay={handlePayBill}
@@ -183,7 +185,15 @@ const Billing = () => {
       )}
 
       {showAddForm && (
-        <AddBills onClose={() => setShowAddForm(false)} />
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <BillForm 
+              onSubmit={handleAddBill}
+              onCancel={() => setShowAddForm(false)}
+              title="Create New Bill"
+            />
+          </div>
+        </div>
       )}
 
       {editBill && (
