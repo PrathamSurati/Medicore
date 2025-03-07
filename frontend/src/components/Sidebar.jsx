@@ -17,46 +17,171 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [patients, setPatients] = useState([]);
-  const [appointments, setAppointments] = useState([]); // Add state for appointments
-  const [prescriptions, setPrescriptions] = useState([]); 
+  const [appointments, setAppointments] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [visitedFilter, setVisitedFilter] = useState("all"); // 'all', 'today', 'upcoming', 'visited'
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:8081/api/patients")
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch patients');
-        return response.json();
-      })
-      .then(data => setPatients(data))
-      .catch(err => setError(err.message));
+    // Fetch initial data
+    const fetchData = async () => {
+      try {
+        // Fetch patients
+        const patientsResponse = await fetch("http://localhost:8081/api/patients");
+        if (!patientsResponse.ok) throw new Error('Failed to fetch patients');
+        const patientsData = await patientsResponse.json();
+        
+        const patientsWithVisitStatus = patientsData.map(patient => ({
+          ...patient,
+          isVisited: patient.isVisited || false,
+          lastVisitDate: patient.lastVisitDate || null,
+          appointments: []
+        }));
+        setPatients(patientsWithVisitStatus);
 
-    // Fetch appointments
-    fetch("http://localhost:8081/api/appointments")
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch appointments');
-        return response.json();
-      })
-      .then(data => setAppointments(data))
-      .catch(err => setError(err.message));
-
-    fetch('http://localhost:8081/api/prescriptions')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        // Fetch appointments
+        const appointmentsResponse = await fetch("http://localhost:8081/api/appointments");
+        if (!appointmentsResponse.ok) throw new Error('Failed to fetch appointments');
+        const appointmentsData = await appointmentsResponse.json();
+        
+        setAppointments(appointmentsData);
+        
+        // Associate appointments with patients
+        if (appointmentsData.length > 0) {
+          setPatients(prevPatients => {
+            const patientsCopy = [...prevPatients];
+            
+            // Group appointments by patient ID
+            const appointmentsByPatient = {};
+            appointmentsData.forEach(appointment => {
+              if (appointment.patientId) {
+                if (!appointmentsByPatient[appointment.patientId]) {
+                  appointmentsByPatient[appointment.patientId] = [];
+                }
+                appointmentsByPatient[appointment.patientId].push(appointment);
+              }
+            });
+            
+            // Update patients with their appointments
+            return patientsCopy.map(patient => ({
+              ...patient,
+              appointments: appointmentsByPatient[patient._id] || []
+            }));
+          });
         }
-        return response.json();
-      })
-      .then(data => {
-        setPrescriptions(data);
-      })
-      .catch(error => {
-        setError(error.toString());
+
+        // Fetch prescriptions
+        const prescriptionsResponse = await fetch('http://localhost:8081/api/prescriptions');
+        if (!prescriptionsResponse.ok) throw new Error('Network response was not ok');
+        const prescriptionsData = await prescriptionsResponse.json();
+        setPrescriptions(prescriptionsData);
+        
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err.message);
+      }
+    };
+
+    fetchData();
+
+    // Setup event listeners for updates
+    const handleReportSaved = (event) => {
+      console.log("Report saved event received:", event.detail);
+      const { patientId, date } = event.detail;
+      
+      setPatients(prevPatients => 
+        prevPatients.map(patient => 
+          patient._id === patientId 
+            ? { ...patient, isVisited: true, lastVisitDate: date || new Date().toISOString() }
+            : patient
+        )
+      );
+    };
+
+    const handlePatientAdded = (event) => {
+      console.log("Patient added event received:", event.detail);
+      const { patient } = event.detail;
+      
+      if (!patient || !patient._id) {
+        console.error("Invalid patient data in event:", event.detail);
+        return;
+      }
+      
+      // Add the new patient to the state
+      setPatients(prevPatients => {
+        // Check if this patient already exists
+        if (prevPatients.some(p => p._id === patient._id)) {
+          console.log("Patient already exists, not adding duplicate");
+          return prevPatients;
+        }
+        
+        console.log("Adding new patient to sidebar:", patient);
+        // Add to beginning of array for visibility
+        return [patient, ...prevPatients];
       });
+    };
+
+    const handleAppointmentAdded = (event) => {
+      console.log("Appointment added event received:", event.detail);
+      const { appointment } = event.detail;
+      
+      if (!appointment || !appointment._id) {
+        console.error("Invalid appointment data in event:", event.detail);
+        return;
+      }
+      
+      // Add new appointment to state
+      setAppointments(prevAppointments => {
+        if (prevAppointments.some(a => a._id === appointment._id)) {
+          return prevAppointments;
+        }
+        return [appointment, ...prevAppointments];
+      });
+      
+      // Update the patient with this appointment
+      if (appointment.patientId) {
+        setPatients(prevPatients => 
+          prevPatients.map(patient => 
+            patient._id === appointment.patientId 
+              ? { 
+                  ...patient, 
+                  appointments: [appointment, ...(patient.appointments || [])]
+                }
+              : patient
+          )
+        );
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('reportSaved', handleReportSaved);
+    window.addEventListener('patientAdded', handlePatientAdded);
+    window.addEventListener('appointmentAdded', handleAppointmentAdded);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('reportSaved', handleReportSaved);
+      window.removeEventListener('patientAdded', handlePatientAdded);
+      window.removeEventListener('appointmentAdded', handleAppointmentAdded);
+    };
   }, []);
 
-  const handlePatientClick = (patientId) => {
+  const handlePatientClick = (patientId, forceReadOnly = false) => {
     console.log('Patient clicked with ID:', patientId);
-    navigate(`/patients/${patientId}`);
+    
+    // Find the patient to check if they've been visited before
+    const patient = patients.find(p => p._id === patientId);
+    
+    // Determine if we should go to read-only mode:
+    // 1. If forceReadOnly is true, OR
+    // 2. If the patient has been visited before (has a report)
+    const shouldBeReadOnly = forceReadOnly || (patient && patient.isVisited);
+    
+    if (shouldBeReadOnly) {
+      navigate(`/patients/${patientId}?readOnly=true`);
+    } else {
+      navigate(`/patients/${patientId}`);
+    }
   };
 
   // New function to handle appointment click
@@ -82,28 +207,109 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
     setSearchTerm(e.target.value);
   }, []);
 
+  // Helper function to determine if an appointment is today, upcoming, or past
+  const getAppointmentStatus = (appointment) => {
+    if (!appointment.startTime) return 'unknown';
+    
+    const appointmentDate = new Date(appointment.startTime);
+    const today = new Date();
+    
+    // Set hours to 0 to compare just the date part
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const apptDate = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), appointmentDate.getDate());
+    
+    if (apptDate.getTime() === todayDate.getTime()) {
+      return 'today';
+    } else if (appointmentDate > today) {
+      return 'upcoming';
+    } else {
+      return 'past';
+    }
+  };
+
+  // Get the latest appointment for a patient
+  const getLatestAppointment = (patient) => {
+    if (!patient.appointments || patient.appointments.length === 0) {
+      return null;
+    }
+    
+    // Sort appointments by date (most recent first)
+    return [...patient.appointments].sort((a, b) => 
+      new Date(b.startTime) - new Date(a.startTime)
+    )[0];
+  };
+
+  // Group patients by their appointment status
+  const todayPatients = patients.filter(patient => {
+    const latestAppointment = getLatestAppointment(patient);
+    return latestAppointment && getAppointmentStatus(latestAppointment) === 'today';
+  });
+  
+  const upcomingPatients = patients.filter(patient => {
+    const latestAppointment = getLatestAppointment(patient);
+    return latestAppointment && getAppointmentStatus(latestAppointment) === 'upcoming';
+  });
+  
+  const pastPatients = patients.filter(patient => {
+    // Consider patients with past appointments or those who have been marked as visited
+    const latestAppointment = getLatestAppointment(patient);
+    return (latestAppointment && getAppointmentStatus(latestAppointment) === 'past') || 
+           patient.isVisited;
+  });
+  
+  // Add a new function to get only visited patients
+  const visitedPatients = patients.filter(patient => 
+    patient.isVisited === true
+  );
+
   // Filter patients based on search term
-  const filteredPatients = patients
-    .filter((patient) =>
+  const filterBySearchTerm = (patientsList) => {
+    return patientsList.filter(patient => 
       patient.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+  };
+  
+  // Update the today's patients filtering to sort first by visit status then by appointment time
+  const filteredTodayPatients = filterBySearchTerm(todayPatients).sort((a, b) => {
+    // First sort by visit status (non-visited first)
+    if (a.isVisited !== b.isVisited) {
+      return a.isVisited ? 1 : -1; // non-visited patients come first
+    }
+    
+    // Then sort by appointment time (ascending order)
+    const appointmentA = getLatestAppointment(a);
+    const appointmentB = getLatestAppointment(b);
+    
+    // Handle cases where appointments might be missing
+    if (!appointmentA && !appointmentB) return 0;
+    if (!appointmentA) return 1;
+    if (!appointmentB) return -1;
+    
+    // Sort by time (earliest time first)
+    const timeA = new Date(appointmentA.startTime).getTime();
+    const timeB = new Date(appointmentB.startTime).getTime();
+    return timeA - timeB;
+  });
+  
+  const filteredUpcomingPatients = filterBySearchTerm(upcomingPatients);
+  const filteredPastPatients = filterBySearchTerm(pastPatients);
+  const filteredVisitedPatients = filterBySearchTerm(visitedPatients);
 
-  // Filter appointments based on search term
-  const filteredAppointments = appointments
-    .filter((appointment) =>
-      (appointment.patientName && appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (appointment.title && appointment.title.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+  // Format date helper function (more detailed for appointments)
+  const formatAppointmentTime = (dateString) => {
+    if (!dateString) return "Not scheduled";
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+  
+  const formatAppointmentDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
 
   const handleToggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
-  };
-
-  // Format date helper function
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -193,44 +399,159 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
         </div>
       </div>
 
-      {/* Modified: Display appointments instead of patients */}
+      {/* Modified: Display patients organized by appointment status */}
       {activeSection === "appointments" && (
         <aside className="secondary-sidebar">
           <div className="search-container">
             <input
               type="text"
-              placeholder="Search appointments..."
+              placeholder="Search patients..."
               value={searchTerm}
               onChange={handleSearch}
               className="search-input"
             />
           </div>
 
-          <div className="appointments-list">
-            {error ? (
-              <div className="error-message">{error}</div>
-            ) : filteredAppointments.length === 0 ? (
-              <div className="no-results">No appointments found</div>
-            ) : (
-              filteredAppointments.map((appointment, index) => (
-                <div 
-                  key={appointment._id} 
-                  className="appointment-card"
-                  onClick={() => handleAppointmentClick(appointment._id)}
-                >
-                  <h4>
-                    {appointment.patientName || "Unnamed Patient"}
-                  </h4>
-                  <div className="appointment-info">
-                    <div><strong>Date:</strong></div>
-                    <div>{formatDate(appointment.startTime).split(' ')[0]}</div>
+          <div className="patient-filter-controls">
+            <button 
+              className={`filter-button ${visitedFilter === "all" ? "active" : ""}`}
+              onClick={() => setVisitedFilter("all")}
+            >
+              All
+            </button>
+            <button 
+              className={`filter-button ${visitedFilter === "today" ? "active" : ""}`}
+              onClick={() => setVisitedFilter("today")}
+            >
+              Today
+            </button>
+            <button 
+              className={`filter-button ${visitedFilter === "upcoming" ? "active" : ""}`}
+              onClick={() => setVisitedFilter("upcoming")}
+            >
+              Upcoming
+            </button>
+            {/* Removed "Past" filter button */}
+            <button 
+              className={`filter-button ${visitedFilter === "visited" ? "active" : ""}`}
+              onClick={() => setVisitedFilter("visited")}
+            >
+              Visited
+            </button>
+          </div>
+
+          <div className="patients-container">
+            {/* Today's Appointments Section - Updated to handle visited status */}
+            {(visitedFilter === "all" || visitedFilter === "today") && (
+              <div className="patients-section today-section">
+                <h3 className="section-header">Today's Appointments ({filteredTodayPatients.length})</h3>
+                {filteredTodayPatients.length === 0 ? (
+                  <div className="no-results">No appointments today</div>
+                ) : (
+                  <div className="patients-list">
+                    {filteredTodayPatients.map((patient, index) => {
+                      const latestAppointment = getLatestAppointment(patient);
+                      return (
+                        <div 
+                          key={patient._id} 
+                          className={`patient-card today-card ${patient.isVisited ? "visited-patient" : ""}`}
+                          onClick={() => handlePatientClick(patient._id, patient.isVisited)}
+                        >
+                          <div className="patient-number">{index + 1}</div>
+                          <div className="patient-info">
+                            <div className="patient-name">{patient.name}</div>
+                            <div className="patient-details">
+                              {patient.age && <span>Age: {patient.age}</span>}
+                              {patient.gender && <span> | {patient.gender}</span>}
+                              {patient.isVisited && <span className="visited-tag"> | Visited</span>}
+                            </div>
+                            {latestAppointment && (
+                              <div className="appointment-time">
+                                <span className="time-badge">{formatAppointmentTime(latestAppointment.startTime)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  
-                  <div className="appointment-time">
-                    {formatDate(appointment.startTime).split(' ')[1]} - {appointment.endTime ? formatDate(appointment.endTime).split(' ')[1] : ''}
+                )}
+              </div>
+            )}
+
+            {/* Upcoming Appointments Section */}
+            {(visitedFilter === "all" || visitedFilter === "upcoming") && (
+              <div className="patients-section upcoming-section">
+                <h3 className="section-header">Upcoming Appointments ({filteredUpcomingPatients.length})</h3>
+                {filteredUpcomingPatients.length === 0 ? (
+                  <div className="no-results">No upcoming appointments</div>
+                ) : (
+                  <div className="patients-list">
+                    {filteredUpcomingPatients.map((patient, index) => {
+                      const latestAppointment = getLatestAppointment(patient);
+                      return (
+                        <div 
+                          key={patient._id} 
+                          className="patient-card upcoming-card"
+                          onClick={() => handlePatientClick(patient._id)}
+                        >
+                          <div className="patient-number">{index + 1}</div>
+                          <div className="patient-info">
+                            <div className="patient-name">{patient.name}</div>
+                            <div className="patient-details">
+                              {patient.age && <span>Age: {patient.age}</span>}
+                              {patient.gender && <span> | {patient.gender}</span>}
+                            </div>
+                            {latestAppointment && (
+                              <div className="appointment-date">
+                                {formatAppointmentDate(latestAppointment.startTime)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
-              ))
+                )}
+              </div>
+            )}
+
+            {/* Past Appointments Section removed */}
+
+            {/* Add new Visited Patients Section */}
+            {(visitedFilter === "all" || visitedFilter === "visited") && (
+              <div className="patients-section visited-section">
+                <h3 className="section-header">Visited Patients ({filteredVisitedPatients.length})</h3>
+                {filteredVisitedPatients.length === 0 ? (
+                  <div className="no-results">No visited patients</div>
+                ) : (
+                  <div className="patients-list">
+                    {filteredVisitedPatients.map((patient, index) => {
+                      return (
+                        <div 
+                          key={patient._id} 
+                          className="patient-card visited-card"
+                          onClick={() => handlePatientClick(patient._id, true)} // Visited patients are read-only
+                        >
+                          <div className="patient-number">{index + 1}</div>
+                          <div className="patient-info">
+                            <div className="patient-header">
+                              <div className="patient-name">{patient.name}</div>
+                              {patient.lastVisitDate && (
+                                <span className="date-badge">Visit: {new Date(patient.lastVisitDate).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                            <div className="patient-details">
+                              {patient.age && <span>Age: {patient.age}</span>}
+                              {patient.gender && <span> | {patient.gender}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </aside>
@@ -249,18 +570,18 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
           </div>
 
           <div className="templates-list">
-              {prescriptions.length === 0 ? (
-                <div className="no-results">No prescriptions found</div>
-              ) : (
-                prescriptions.map((prescription, index) => (
-                  <div key={prescription._id} className="template-card">
-                    <h4>
-                      {index + 1}. {prescription.title}
-                    </h4>
-                  </div>
-                ))
-              )}
-            </div>
+            {prescriptions.length === 0 ? (
+              <div className="no-results">No prescriptions found</div>
+            ) : (
+              prescriptions.map((prescription, index) => (
+                <div key={prescription._id} className="template-card">
+                  <h4>
+                    {index + 1}. {prescription.title}
+                  </h4>
+                </div>
+              ))
+            )}
+          </div>
         </aside>
       )}
     </>

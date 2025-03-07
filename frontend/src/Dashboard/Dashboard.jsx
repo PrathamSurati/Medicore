@@ -28,20 +28,84 @@ const Dashboard = () => {
         // Calculate total patients
         const totalPatients = patientsData.length;
 
-        // Calculate today's patients
+        // Fetch appointments to calculate today's patients
+        const appointmentsResponse = await axios.get(`${API_URL}/appointments`);
+        const appointmentsData = appointmentsResponse.data;
+        
+        // Calculate today's patients based on appointments
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayPatients = patientsData.filter((p) => {
-          const createdAt = new Date(p.createdAt);
-          return createdAt >= today;
-        }).length;
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Find appointments scheduled for today
+        const todayAppointments = appointmentsData.filter((appointment) => {
+          const appointmentDate = new Date(appointment.startTime);
+          return appointmentDate >= today && appointmentDate < tomorrow;
+        });
+        
+        // Count unique patients with appointments today
+        const uniqueTodayPatientIds = new Set();
+        todayAppointments.forEach(appointment => {
+          if (appointment.patientId) {
+            uniqueTodayPatientIds.add(appointment.patientId);
+          }
+        });
+        
+        const todayPatients = uniqueTodayPatientIds.size;
 
-        // Sort and slice recent patients
-        const sortedPatients = [...patientsData].sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        // Create a map of patient IDs to their most recent appointment or visit
+        const patientActivityMap = {};
+        
+        // First, process appointment data
+        appointmentsData.forEach(appointment => {
+          const patientId = appointment.patientId;
+          if (!patientId) return;
+          
+          const appointmentDate = new Date(appointment.startTime);
+          
+          if (!patientActivityMap[patientId] || 
+              appointmentDate > new Date(patientActivityMap[patientId].date)) {
+            patientActivityMap[patientId] = {
+              date: appointment.startTime,
+              type: 'appointment'
+            };
+          }
+        });
+        
+        // Then, check for visit dates which may override appointment dates
+        patientsData.forEach(patient => {
+          if (patient.lastVisitDate) {
+            const visitDate = new Date(patient.lastVisitDate);
+            const patientId = patient._id;
+            
+            if (!patientActivityMap[patientId] || 
+                visitDate > new Date(patientActivityMap[patientId].date)) {
+              patientActivityMap[patientId] = {
+                date: patient.lastVisitDate,
+                type: 'visit'
+              };
+            }
+          }
+        });
+        
+        // Enrich patient data with their most recent activity
+        const patientsWithActivity = patientsData.map(patient => {
+          const activity = patientActivityMap[patient._id];
+          return {
+            ...patient,
+            recentActivity: activity || { date: patient.createdAt, type: 'registered' }
+          };
+        });
+        
+        // Sort patients by their most recent activity date
+        const sortedByActivity = [...patientsWithActivity].sort(
+          (a, b) => new Date(b.recentActivity.date) - new Date(a.recentActivity.date)
         );
-        const latestPatients = sortedPatients.slice(0, 4);
-        setRecentPatients(latestPatients);
+        
+        // Get the 4 most recently active patients
+        const recentlyActivePatients = sortedByActivity.slice(0, 4);
+        setRecentPatients(recentlyActivePatients);
 
         // Fetch bills data
         const billsResponse = await axios.get(`${API_URL}/bills`);
@@ -100,6 +164,22 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  // Helper function to format activity type for display
+  const formatActivityType = (activity) => {
+    if (!activity) return 'N/A';
+    
+    switch (activity.type) {
+      case 'appointment':
+        return `Appointment on ${new Date(activity.date).toLocaleDateString()}`;
+      case 'visit':
+        return `Visited on ${new Date(activity.date).toLocaleDateString()}`;
+      case 'registered':
+        return `Registered on ${new Date(activity.date).toLocaleDateString()}`;
+      default:
+        return activity.type;
+    }
+  };
+
   return (
     <div className="dashboard">
       <div className="dashboard-header">
@@ -131,9 +211,9 @@ const Dashboard = () => {
             <div className="stat-card">
               <div className="stat-icon today">📅</div>
               <div className="stat-content">
-                <h3>Today's Patients</h3>
+                <h3>Today's Appointments</h3>
                 <p className="stat-value">{stats.todayPatients}</p>
-                <p className="stat-label">Patients visited today</p>
+                <p className="stat-label">Patients scheduled today</p>
               </div>
             </div>
 
@@ -159,18 +239,21 @@ const Dashboard = () => {
           <div className="dashboard-content">
             <div className="recent-activity">
               <div className="section-header">
-                <h3>Recent Patients</h3>
+                <h3>Recent Patient Activity</h3>
                 <button className="view-all">View All</button>
               </div>
               <div className="activity-list">
                 {recentPatients.length > 0 ? (
                   recentPatients.map((patient, index) => (
                     <div key={patient._id || `patient-${index}`} className="activity-item">
-                      <div className="activity-icon patient">👤</div>
+                      <div className={`activity-icon patient ${patient.recentActivity.type}`}>
+                        {patient.recentActivity.type === 'visit' ? '🩺' : 
+                         patient.recentActivity.type === 'appointment' ? '📅' : '👤'}
+                      </div>
                       <div className="activity-content">
                         <h4>{patient.name}</h4>
-                        <p>{patient.type || patient.category || 'Patient'}</p>
-                        <small>{patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : ""}</small>
+                        <p>{formatActivityType(patient.recentActivity)}</p>
+                        <small>{patient.gender} {patient.age ? `| Age: ${patient.age}` : ''}</small>
                       </div>
                     </div>
                   ))

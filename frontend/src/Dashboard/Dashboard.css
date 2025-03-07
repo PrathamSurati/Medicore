@@ -201,6 +201,21 @@
   background-color: var(--bg-secondary);
 }
 
+.activity-icon.patient.visit {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.activity-icon.patient.appointment {
+  background-color: rgba(33, 150, 243, 0.1);
+  color: #2196F3;
+}
+
+.activity-icon.patient.registered {
+  background-color: rgba(156, 39, 176, 0.1);
+  color: #9C27B0;
+}
+
 .activity-content {
   flex: 1;
 }

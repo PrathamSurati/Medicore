@@ -142,19 +142,40 @@ const AddPatientModal = ({ isOpen, onClose }) => {
         console.log("Server Response: ", result);
         const { success, message, error, patient } = result;
 
-        if (success) {
+        if (success && patient) {
           handleSuccess(message);
           
-          if (patient) {
-            // If appointment data is provided, schedule an appointment
-            if (appointmentDate) {
-              await scheduleAppointment(patient._id);
-            } else {
-              setTimeout(() => {
-                navigate(`/patients/${patient._id}`);
-                onClose();
-              }, 1500);
-            }
+          // Create a complete patient object with required properties
+          const completePatient = {
+            ...patient,
+            isVisited: false,
+            lastVisitDate: null,
+            appointments: [],
+            createdAt: new Date().toISOString()
+          };
+          
+          // Log before dispatching event
+          console.log("Dispatching patientAdded event with data:", completePatient);
+          
+          // Dispatch the event
+          try {
+            const patientAddedEvent = new CustomEvent('patientAdded', {
+              detail: { patient: completePatient }
+            });
+            window.dispatchEvent(patientAddedEvent);
+            console.log("Event dispatched successfully");
+          } catch (eventErr) {
+            console.error("Error dispatching patient event:", eventErr);
+          }
+          
+          // If appointment date is provided, schedule an appointment
+          if (appointmentDate) {
+            await scheduleAppointment(patient._id);
+          } else {
+            setTimeout(() => {
+              navigate(`/patients/${patient._id}`);
+              onClose();
+            }, 1500);
           }
         } else if (error) {
           handleError(error);
@@ -162,7 +183,7 @@ const AddPatientModal = ({ isOpen, onClose }) => {
           handleError(message);
         }
       } catch (err) {
-        console.error(err);
+        console.error("API Error:", err);
         handleError("Failed to add patient. Please try again later.");            
       }
     } else {
@@ -226,6 +247,23 @@ const AddPatientModal = ({ isOpen, onClose }) => {
 
       const result = await response.json();
       console.log('Appointment creation result:', result);
+
+      // Also dispatch an event for the new appointment
+      if (result && result._id) {
+        // Log before dispatching event
+        console.log("Dispatching appointmentAdded event with data:", result);
+        
+        // Dispatch the event
+        try {
+          const newAppointmentEvent = new CustomEvent('appointmentAdded', {
+            detail: { appointment: result }
+          });
+          window.dispatchEvent(newAppointmentEvent);
+          console.log("Appointment event dispatched successfully");
+        } catch (eventErr) {
+          console.error("Error dispatching appointment event:", eventErr);
+        }
+      }
       
       handleSuccess("Appointment scheduled successfully!");
       setTimeout(() => {

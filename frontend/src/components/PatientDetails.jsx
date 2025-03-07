@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import "./PatientDetails.css"; // Create this file for styling
 import axios from "axios";
 
@@ -33,6 +33,8 @@ const defaultVitals = [
 
 const PatientDetails = () => {
   const { patientId } = useParams();
+  const [searchParams] = useSearchParams();
+  const isReadOnly = searchParams.get('readOnly') === 'true';
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -184,6 +186,15 @@ const PatientDetails = () => {
       );
       console.log('Report saved successfully:', response.data);
       alert("Report saved successfully!");
+
+      // Dispatch custom event to notify sidebar about the saved report
+      const reportSavedEvent = new CustomEvent('reportSaved', {
+        detail: {
+          patientId: patientId,
+          date: new Date().toISOString()
+        }
+      });
+      window.dispatchEvent(reportSavedEvent);
 
       // Refresh templates list
       axios.get(`http://localhost:8081/api/prescriptions`).then((response) => {
@@ -478,9 +489,6 @@ const PatientDetails = () => {
       {/* Patient Info Navbar */}
       <div className="patient-info-navbar">
         <div className="patient-info-container">
-          <div className="patient-avatar">
-            {patient.name ? patient.name.charAt(0).toUpperCase() : "P"}
-          </div>
           <div className="patient-basic-info">
             <h2>{patient.name}</h2>
             <div className="patient-tags">
@@ -499,45 +507,48 @@ const PatientDetails = () => {
           </div>
         </div>
         <div className="patient-actions">
-          <div className="template-dropdown" ref={dropdownRef}>
-            <button
-              className="template-dropdown-button"
-              onClick={toggleDropdown}
-            >
-              Saved Templates
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+          {/* Only show templates dropdown if not in read-only mode */}
+          {!isReadOnly && (
+            <div className="template-dropdown" ref={dropdownRef}>
+              <button
+                className="template-dropdown-button"
+                onClick={toggleDropdown}
               >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-            <div
-              className={`template-dropdown-content ${
-                dropdownOpen ? "show" : ""
-              }`}
-            >
-              <div className="dropdown-header">Saved Templates</div>
-              {templates.length > 0 ? (
-                templates.map((template) => (
-                  <div
-                    key={template._id}
-                    className="template-item"
-                    onClick={() => loadTemplate(template._id)}
-                  >
-                    {template.title || "Untitled Template"}
-                  </div>
-                ))
-              ) : (
-                <div className="template-item">No saved templates</div>
-              )}
+                Saved Templates
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              <div
+                className={`template-dropdown-content ${
+                  dropdownOpen ? "show" : ""
+                }`}
+              >
+                <div className="dropdown-header">Saved Templates</div>
+                {templates.length > 0 ? (
+                  templates.map((template) => (
+                    <div
+                      key={template._id}
+                      className="template-item"
+                      onClick={() => loadTemplate(template._id)}
+                    >
+                      {template.title || "Untitled Template"}
+                    </div>
+                  ))
+                ) : (
+                  <div className="template-item">No saved templates</div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           <button className="action-button print-button" onClick={handlePrint}>Print</button>
         </div>
       </div>
@@ -601,126 +612,220 @@ const PatientDetails = () => {
 
         {/* Report Components container - on the right */}
         <div className="report-container">
-          {recordLoading ? (
-            <div className="record-loading">
-              <p>Loading record data...</p>
-            </div>
-          ) : recordError ? (
-            <div className="record-error">
-              <p>{recordError}</p>
-              <button 
-                className="retry-btn" 
-                onClick={() => handleTimelineDotClick(selectedRecord)}
-              >
-                Retry
-              </button>
-            </div>
-          ) : selectedRecord ? (
-            <div className="selected-record-container">
-              <div className="selected-record-header">
-                <h3>{selectedRecord.title || 'Patient Visit'}</h3>
-                <span className="record-date">{formatDate(selectedRecord.date)}</span>
-                <button className="close-record-btn" onClick={() => setSelectedRecord(null)}>
-                  &times;
-                </button>
-              </div>
-              <div className="selected-record-content">
-                {/* Vitals Section */}
-                {selectedRecord.vitals && selectedRecord.vitals.length > 0 && selectedRecord.vitals.some(v => v.value) && (
-                  <div className="record-section">
-                    <h4>Vitals</h4>
-                    <ul className="vitals-list">
-                      {selectedRecord.vitals.map((vital, index) => (
-                        vital.value && (
-                          <li key={index}>
-                            <span className="vital-name">{vital.name}:</span> {vital.value}
-                          </li>
-                        )
-                      ))}
-                    </ul>
+          {isReadOnly ? (
+            <div className="read-only-notice">
+              <p>This is a past appointment record. It cannot be edited.</p>
+              
+              {/* Show selected record if available, otherwise show a message */}
+              {selectedRecord ? (
+                <div className="selected-record-container">
+                  <div className="selected-record-header">
+                    <h3>{selectedRecord.title || 'Patient Visit'}</h3>
+                    <span className="record-date">{formatDate(selectedRecord.date)}</span>
+                    <button className="close-record-btn" onClick={() => setSelectedRecord(null)}>
+                      &times;
+                    </button>
                   </div>
-                )}
-                
-                {/* Complaints Section */}
-                {selectedRecord.complaints && selectedRecord.complaints.length > 0 && (
-                  <div className="record-section">
-                    <h4>Complaints</h4>
-                    <ul className="complaints-list">
-                      {selectedRecord.complaints.map((complaint, index) => (
-                        <li key={index}>{complaint}</li>
-                      ))}
-                    </ul>
+                  <div className="selected-record-content">
+                    {/* Vitals Section */}
+                    {selectedRecord.vitals && selectedRecord.vitals.length > 0 && selectedRecord.vitals.some(v => v.value) && (
+                      <div className="record-section">
+                        <h4>Vitals</h4>
+                        <ul className="vitals-list">
+                          {selectedRecord.vitals.map((vital, index) => (
+                            vital.value && (
+                              <li key={index}>
+                                <span className="vital-name">{vital.name}:</span> {vital.value}
+                              </li>
+                            )
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Complaints Section */}
+                    {selectedRecord.complaints && selectedRecord.complaints.length > 0 && (
+                      <div className="record-section">
+                        <h4>Complaints</h4>
+                        <ul className="complaints-list">
+                          {selectedRecord.complaints.map((complaint, index) => (
+                            <li key={index}>{complaint}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Diagnosis Section */}
+                    {selectedRecord.diagnosis && selectedRecord.diagnosis.length > 0 && (
+                      <div className="record-section">
+                        <h4>Diagnosis</h4>
+                        <ul className="diagnosis-list">
+                          {selectedRecord.diagnosis.map((diagnosis, index) => (
+                            <li key={index}>{diagnosis}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Medicines Section */}
+                    {selectedRecord.medicines && selectedRecord.medicines.length > 0 && (
+                      <div className="record-section">
+                        <h4>Medications</h4>
+                        <ul className="medicines-list">
+                          {selectedRecord.medicines.map((medicine, index) => (
+                            <li key={index}>
+                              <div className="medicine-name">{medicine.name}</div>
+                              <div className="medicine-details">
+                                {medicine.dosage && <span className="medicine-dosage">{medicine.dosage}</span>}
+                                {medicine.frequency && <span className="medicine-frequency">{medicine.frequency}</span>}
+                                {medicine.duration && <span className="medicine-duration">for {medicine.duration}</span>}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Next Visit Section */}
+                    {selectedRecord.nextVisit && (
+                      <div className="record-section">
+                        <h4>Next Visit</h4>
+                        <p>{new Date(selectedRecord.nextVisit).toLocaleDateString()}</p>
+                      </div>
+                    )}
                   </div>
-                )}
-                
-                {/* Diagnosis Section */}
-                {selectedRecord.diagnosis && selectedRecord.diagnosis.length > 0 && (
-                  <div className="record-section">
-                    <h4>Diagnosis</h4>
-                    <ul className="diagnosis-list">
-                      {selectedRecord.diagnosis.map((diagnosis, index) => (
-                        <li key={index}>{diagnosis}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {/* Medicines Section */}
-                {selectedRecord.medicines && selectedRecord.medicines.length > 0 && (
-                  <div className="record-section">
-                    <h4>Medications</h4>
-                    <ul className="medicines-list">
-                      {selectedRecord.medicines.map((medicine, index) => (
-                        <li key={index}>
-                          <div className="medicine-name">{medicine.name}</div>
-                          <div className="medicine-details">
-                            {medicine.dosage && <span className="medicine-dosage">{medicine.dosage}</span>}
-                            {medicine.frequency && <span className="medicine-frequency">{medicine.frequency}</span>}
-                            {medicine.duration && <span className="medicine-duration">for {medicine.duration}</span>}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {/* Next Visit Section */}
-                {selectedRecord.nextVisit && (
-                  <div className="record-section">
-                    <h4>Next Visit</h4>
-                    <p>{new Date(selectedRecord.nextVisit).toLocaleDateString()}</p>
-                  </div>
-                )}
-              </div>
-              <div className="selected-record-actions">
-                <button className="load-record-btn" onClick={() => {
-                  // Load the selected record data into the form
-                  setVitals(selectedRecord.vitals && selectedRecord.vitals.length > 0 
-                    ? selectedRecord.vitals 
-                    : [...defaultVitals]);
-                  setComplaints(selectedRecord.complaints || []);
-                  setDiagnosis(selectedRecord.diagnosis || []);
-                  setMedicines(selectedRecord.medicines || []);
-                  setDate(selectedRecord.nextVisit || '');
-                  setTitle(selectedRecord.title || '');
-                  setSelectedRecord(null); // Close the record view
-                }}>
-                  Use as Template
-                </button>
-              </div>
+                </div>
+              ) : (
+                <div className="no-selected-record">
+                  <p>Click on a timeline item to view the details of that visit.</p>
+                </div>
+              )}
             </div>
           ) : (
-            // Show the form if no record is selected
-            <div className="report-component">
-              <VitalsComponent vitals={vitals} setVitals={setVitals} />
-              <ComplaintsComponent complaints={complaints} setComplaints={setComplaints} />
-              <DiagnosisComponent diagnosis={diagnosis} setDiagnosis={setDiagnosis} />
-              <MedicinesComponent medicines={medicines} setMedicines={setMedicines} />
-              <NextVisitComponent date={date} setDate={setDate} />
-              <button className="save-report-btn" onClick={handleSaveReport}>
-                Save Report
-              </button>
-            </div>
+            // Original form rendering for editable mode
+            <>
+              {recordLoading ? (
+                <div className="record-loading">
+                  <p>Loading record data...</p>
+                </div>
+              ) : recordError ? (
+                <div className="record-error">
+                  <p>{recordError}</p>
+                  <button 
+                    className="retry-btn" 
+                    onClick={() => handleTimelineDotClick(selectedRecord)}
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : selectedRecord ? (
+                <div className="selected-record-container">
+                  <div className="selected-record-header">
+                    <h3>{selectedRecord.title || 'Patient Visit'}</h3>
+                    <span className="record-date">{formatDate(selectedRecord.date)}</span>
+                    <button className="close-record-btn" onClick={() => setSelectedRecord(null)}>
+                      &times;
+                    </button>
+                  </div>
+                  <div className="selected-record-content">
+                    {/* Vitals Section */}
+                    {selectedRecord.vitals && selectedRecord.vitals.length > 0 && selectedRecord.vitals.some(v => v.value) && (
+                      <div className="record-section">
+                        <h4>Vitals</h4>
+                        <ul className="vitals-list">
+                          {selectedRecord.vitals.map((vital, index) => (
+                            vital.value && (
+                              <li key={index}>
+                                <span className="vital-name">{vital.name}:</span> {vital.value}
+                              </li>
+                            )
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Complaints Section */}
+                    {selectedRecord.complaints && selectedRecord.complaints.length > 0 && (
+                      <div className="record-section">
+                        <h4>Complaints</h4>
+                        <ul className="complaints-list">
+                          {selectedRecord.complaints.map((complaint, index) => (
+                            <li key={index}>{complaint}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Diagnosis Section */}
+                    {selectedRecord.diagnosis && selectedRecord.diagnosis.length > 0 && (
+                      <div className="record-section">
+                        <h4>Diagnosis</h4>
+                        <ul className="diagnosis-list">
+                          {selectedRecord.diagnosis.map((diagnosis, index) => (
+                            <li key={index}>{diagnosis}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Medicines Section */}
+                    {selectedRecord.medicines && selectedRecord.medicines.length > 0 && (
+                      <div className="record-section">
+                        <h4>Medications</h4>
+                        <ul className="medicines-list">
+                          {selectedRecord.medicines.map((medicine, index) => (
+                            <li key={index}>
+                              <div className="medicine-name">{medicine.name}</div>
+                              <div className="medicine-details">
+                                {medicine.dosage && <span className="medicine-dosage">{medicine.dosage}</span>}
+                                {medicine.frequency && <span className="medicine-frequency">{medicine.frequency}</span>}
+                                {medicine.duration && <span className="medicine-duration">for {medicine.duration}</span>}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Next Visit Section */}
+                    {selectedRecord.nextVisit && (
+                      <div className="record-section">
+                        <h4>Next Visit</h4>
+                        <p>{new Date(selectedRecord.nextVisit).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="selected-record-actions">
+                    <button className="load-record-btn" onClick={() => {
+                      // Load the selected record data into the form
+                      setVitals(selectedRecord.vitals && selectedRecord.vitals.length > 0 
+                        ? selectedRecord.vitals 
+                        : [...defaultVitals]);
+                      setComplaints(selectedRecord.complaints || []);
+                      setDiagnosis(selectedRecord.diagnosis || []);
+                      setMedicines(selectedRecord.medicines || []);
+                      setDate(selectedRecord.nextVisit || '');
+                      setTitle(selectedRecord.title || '');
+                      setSelectedRecord(null); // Close the record view
+                    }}>
+                      Use as Template
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // Show the form if no record is selected
+                <div className="report-component">
+                  <VitalsComponent vitals={vitals} setVitals={setVitals} />
+                  <ComplaintsComponent complaints={complaints} setComplaints={setComplaints} />
+                  <DiagnosisComponent diagnosis={diagnosis} setDiagnosis={setDiagnosis} />
+                  <MedicinesComponent medicines={medicines} setMedicines={setMedicines} />
+                  <NextVisitComponent date={date} setDate={setDate} />
+                  <button className="save-report-btn" onClick={handleSaveReport}>
+                    Save Report
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

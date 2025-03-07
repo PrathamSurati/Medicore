@@ -167,28 +167,234 @@ html {
   padding: 0;
 }
 
+/* Enhanced Secondary Sidebar Styling */
 .secondary-sidebar {
-  height: calc(100% - 60px); /* Adjust for the height of the bar */
+  height: calc(100vh - 60px);
   background-color: #ffffff;
-  /* padding: 1rem; */
-  padding-top: 0px;
-  z-index: 1;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  width: 240px;
+  box-shadow: -1px 0 10px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
-  overflow-y: auto;
-  scrollbar-width: none;
   position: fixed;
-  top: 60px; /* Adjust for the height of the navbar */
-  left: 250px; /* Adjust this line */
+  top: 60px;
+  left: 250px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
+/* Better styling for search container */
 .secondary-sidebar .search-container {
+  padding: 14px;
+  background-color: #fafafa;
+  border-bottom: 1px solid #eaeaea;
   position: sticky;
   top: 0;
-  background-color: #ffffff;
-  z-index: 2;
-  padding-top: 1rem;
-  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+  z-index: 20;
+}
+
+.secondary-sidebar .search-input {
+  border-radius: 20px;
+  padding: 10px 15px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.secondary-sidebar .search-input:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.15);
+  outline: none;
+}
+
+/* Enhance filter controls */
+.secondary-sidebar .patient-filter-controls {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 8px; /* Reduce horizontal padding */
+  background-color: #fafafa;
+  border-bottom: 1px solid #eaeaea;
+  position: sticky;
+  top: 56px;
+  z-index: 19;
+}
+
+.secondary-sidebar .filter-button {
+  font-size: 11px; /* Slightly smaller font */
+  padding: 5px 8px; /* Reduced padding */
+  border-radius: 15px;
+  border: none;
+  background: none;
+  color: #666;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.secondary-sidebar .filter-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.secondary-sidebar .filter-button.active {
+  background-color: #4a90e2;
+  color: white;
+  font-weight: 500;
+}
+
+/* Make patients container scrollable with nice effects */
+.secondary-sidebar .patients-container {
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d1d1 #f5f5f5;
+  padding-bottom: 15px;
+}
+
+.secondary-sidebar .patients-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.secondary-sidebar .patients-container::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.secondary-sidebar .patients-container::-webkit-scrollbar-thumb {
+  background-color: #d1d1d1;
+  border-radius: 6px;
+}
+
+/* Section headers with sticky positioning */
+.secondary-sidebar .section-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 15px;
+  background-color: #f5f7fa;
+  color: #4a5568;
+  font-size: 13px;
+  font-weight: 600;
+  border-left: 3px solid #4a90e2;
+  letter-spacing: 0.3px;
+  margin: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.secondary-sidebar .section-header::after {
+  content: attr(data-count);
+  font-size: 12px;
+  color: #718096;
+}
+
+.secondary-sidebar .today-section .section-header {
+  border-left-color: #4f46e5;
+}
+
+.secondary-sidebar .upcoming-section .section-header {
+  border-left-color: #0ea5e9;
+}
+
+.secondary-sidebar .past-section .section-header {
+  border-left-color: #65a30d;
+}
+
+/* Style for the visited section */
+.secondary-sidebar .visited-section .section-header {
+  border-left-color: #9333EA; /* Purple color for visited */
+}
+
+/* Style for the not-visited section */
+.secondary-sidebar .not-visited-section .section-header {
+  border-left-color: #f97316; /* Orange color for not visited */
+}
+
+/* Patient lists styling */
+.secondary-sidebar .patients-list {
+  padding: 5px 8px;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* Enhanced patient cards */
+.secondary-sidebar .patient-card {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  background-color: white;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: all 0.2s ease;
+}
+
+.secondary-sidebar .patient-card:hover {
+  background-color: #f9fafb;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+.secondary-sidebar .patient-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 3px;
+}
+
+.secondary-sidebar .patient-details {
+  font-size: 12px;
+  color: #666;
+}
+
+.secondary-sidebar .patient-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Better badge styling */
+.secondary-sidebar .time-badge, 
+.secondary-sidebar .date-badge {
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: rgba(79, 70, 229, 0.1);
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+.secondary-sidebar .date-badge {
+  background-color: rgba(14, 165, 233, 0.1);
+  color: #0ea5e9;
+}
+
+/* Badge for visited patients */
+.secondary-sidebar .visited-badge {
+  background-color: rgba(147, 51, 234, 0.1);
+  color: #9333EA;
+}
+
+/* Empty state styling */
+.secondary-sidebar .no-results {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Animation for new items */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.secondary-sidebar .patient-card {
+  animation: fadeIn 0.3s ease forwards;
 }
 
 .primary-sidebar.collapsed + .secondary-sidebar {
@@ -591,4 +797,98 @@ html {
   .main-content {
     margin-left: 250px;
   }
+}
+
+/* Patient numbering style */
+.patient-number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 22px;
+  height: 22px;
+  background-color: #f0f0f0;
+  color: #555;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 11px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Special styles for different appointment types */
+.today-section .patient-number {
+  background-color: rgba(79, 70, 229, 0.1);
+  color: #4f46e5;
+}
+
+.upcoming-section .patient-number {
+  background-color: rgba(14, 165, 233, 0.1);
+  color: #0ea5e9;
+}
+
+.past-section .patient-number {
+  background-color: rgba(101, 163, 13, 0.1);
+  color: #65a30d;
+}
+
+/* Visited patient number styling */
+.visited-section .patient-number {
+  background-color: rgba(147, 51, 234, 0.1);
+  color: #9333EA;
+}
+
+/* Not Visited patient number styling */
+.not-visited-section .patient-number {
+  background-color: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+}
+
+/* Visited card specific styles */
+.secondary-sidebar .visited-card {
+  border-left: 3px solid #9333EA;
+}
+
+/* Not Visited card specific styles */
+.secondary-sidebar .not-visited-card {
+  border-left: 3px solid #f97316;
+}
+
+/* Adjust filter controls to fit 6 buttons */
+.secondary-sidebar .patient-filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 8px 6px;
+  gap: 4px;
+  background-color: #fafafa;
+  border-bottom: 1px solid #eaeaea;
+  position: sticky;
+  top: 56px;
+  z-index: 19;
+}
+
+.secondary-sidebar .filter-button {
+  font-size: 10px;
+  padding: 4px 7px;
+  border-radius: 12px;
+  flex: 0 1 auto;
+  border: none;
+  background: none;
+  color: #666;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* Add this to your existing Sidebar.css file */
+
+.visited-patient {
+  background-color: #e8f4e8; /* Light green background for visited patients */
+  opacity: 0.8; /* Slightly dimmed to distinguish from non-visited */
+  border-left: 4px solid #4CAF50; /* Green border to indicate visited status */
+}
+
+.visited-tag {
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 0.85em;
 }
