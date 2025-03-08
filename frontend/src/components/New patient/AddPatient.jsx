@@ -422,25 +422,27 @@ const AddPatientModal = ({ isOpen, onClose }) => {
             {/* Appointment Scheduling Section */}
             <div className="appointment-section">
               <h3>Schedule Appointment</h3>
-              <div className="form-group">
-                <label htmlFor="appointmentDate">Appointment Date</label>
-                <input
-                  type="date"
-                  id="appointmentDate"
-                  value={appointmentDate}
-                  onChange={(e) => setAppointmentDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="appointmentTime">Appointment Time</label>
-                <input
-                  type="time"
-                  id="appointmentTime"
-                  value={appointmentTime}
-                  onChange={(e) => setAppointmentTime(e.target.value)}
-                />
+              <div className="appointment-row">
+                <div className="form-group">
+                  <label htmlFor="appointmentDate">Appointment Date</label>
+                  <input
+                    type="date"
+                    id="appointmentDate"
+                    value={appointmentDate}
+                    onChange={(e) => setAppointmentDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="appointmentTime">Appointment Time</label>
+                  <input
+                    type="time"
+                    id="appointmentTime"
+                    value={appointmentTime}
+                    onChange={(e) => setAppointmentTime(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
@@ -527,27 +529,29 @@ const AddPatientModal = ({ isOpen, onClose }) => {
                 {/* Appointment form for existing patient */}
                 <form onSubmit={handleSubmit} className="appointment-form">
                   <h3>Schedule Appointment</h3>
-                  <div className="form-group">
-                    <label htmlFor="existingAppointmentDate">Appointment Date *</label>
-                    <input
-                      type="date"
-                      id="existingAppointmentDate"
-                      value={appointmentDate}
-                      onChange={(e) => setAppointmentDate(e.target.value)}
-                      required
-                      min={new Date().toISOString().split('T')[0]}
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="existingAppointmentTime">Appointment Time *</label>
-                    <input
-                      type="time"
-                      id="existingAppointmentTime"
-                      value={appointmentTime}
-                      onChange={(e) => setAppointmentTime(e.target.value)}
-                      required
-                    />
+                  <div className="appointment-row">
+                    <div className="form-group">
+                      <label htmlFor="existingAppointmentDate">Appointment Date *</label>
+                      <input
+                        type="date"
+                        id="existingAppointmentDate"
+                        value={appointmentDate}
+                        onChange={(e) => setAppointmentDate(e.target.value)}
+                        required
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="existingAppointmentTime">Appointment Time *</label>
+                      <input
+                        type="time"
+                        id="existingAppointmentTime"
+                        value={appointmentTime}
+                        onChange={(e) => setAppointmentTime(e.target.value)}
+                        required
+                      />
+                    </div>
                   </div>
                   
                   <div className="form-actions">

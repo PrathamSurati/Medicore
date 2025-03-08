@@ -88,6 +88,26 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Add PATCH endpoint to update appointment
+router.patch('/:id', async (req, res) => {
+  try {
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      req.params.id, 
+      { $set: req.body },
+      { new: true }
+    );
+    
+    if (!updatedAppointment) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+    
+    res.json(updatedAppointment);
+  } catch (err) {
+    console.error('Error updating appointment:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Delete an appointment
 router.delete('/:id', async (req, res) => {
   try {

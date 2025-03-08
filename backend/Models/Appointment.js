@@ -35,6 +35,11 @@ const AppointmentSchema = new Schema({
     enum: ['Scheduled', 'Confirmed', 'Completed', 'Cancelled', 'No-Show'],
     default: 'Scheduled'
   },
+  visitStatus: {
+    type: String,
+    enum: ['visited', 'not visited'],
+    default: 'not visited'
+  },
   notes: String,
   createdAt: {
     type: Date,

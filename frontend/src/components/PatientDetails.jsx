@@ -44,6 +44,7 @@ const PatientDetails = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [recordLoading, setRecordLoading] = useState(false);
   const [recordError, setRecordError] = useState(null);
+  const [appointment, setAppointment] = useState(null);
 
   const [vitals, setVitals] = useState(defaultVitals);
   const [diagnosis, setDiagnosis] = useState([]);
@@ -110,6 +111,30 @@ const PatientDetails = () => {
       })
       .catch((error) => {
         console.error("Failed to fetch patient history:", error);
+      });
+
+    // Fetch today's appointment for this patient
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    axios
+      .get(`http://localhost:8081/api/appointments/patient/${patientId}`)
+      .then((response) => {
+        // Find appointment scheduled for today
+        const todayAppointment = response.data.find(appt => {
+          const apptDate = new Date(appt.startTime);
+          return apptDate >= today && apptDate < tomorrow;
+        });
+        
+        if (todayAppointment) {
+          setAppointment(todayAppointment);
+          console.log('Appointment status:', todayAppointment.visitStatus);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching appointments:', error);
       });
   }, [patientId]); // This effect runs when patientId changes
 
@@ -180,11 +205,47 @@ const PatientDetails = () => {
 
     // Send a POST request to your backend API to save the report data
     try {
+      // Step 1: Save the report
       const response = await axios.post(
         `http://localhost:8081/api/patients/${patientId}/details`,
         reportData
       );
       console.log('Report saved successfully:', response.data);
+      
+      // Step 2: Find today's appointment for this patient and update visit status
+      try {
+        // Get today's date range
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        // Fetch appointments for this patient
+        const appointmentsResponse = await axios.get(
+          `http://localhost:8081/api/appointments/patient/${patientId}`
+        );
+        
+        // Find appointment scheduled for today
+        const todayAppointment = appointmentsResponse.data.find(appointment => {
+          const appointmentDate = new Date(appointment.startTime);
+          return appointmentDate >= today && appointmentDate < tomorrow;
+        });
+        
+        // If there's an appointment for today, update its visit status
+        if (todayAppointment) {
+          await axios.patch(
+            `http://localhost:8081/api/appointments/${todayAppointment._id}`,
+            { 
+              visitStatus: 'visited',
+              status: 'Completed'
+            }
+          );
+          console.log('Appointment visit status updated to visited');
+        }
+      } catch (appointmentError) {
+        console.error('Error updating appointment visit status:', appointmentError);
+      }
+
       alert("Report saved successfully!");
 
       // Dispatch custom event to notify sidebar about the saved report
@@ -501,6 +562,11 @@ const PatientDetails = () => {
               {patient.bloodGroup && (
                 <span className="patient-info-tag">
                   Blood Group: {patient.bloodGroup}
+                </span>
+              )}
+              {appointment && (
+                <span className={`patient-info-tag visit-status ${appointment.visitStatus}`}>
+                  {appointment.visitStatus === 'visited' ? 'Visited' : 'Not Visited'}
                 </span>
               )}
             </div>

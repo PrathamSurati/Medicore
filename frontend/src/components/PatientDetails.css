@@ -808,3 +808,20 @@ body {
 .no-selected-record p {
   font-size: 16px;
 }
+
+/* Visit Status Tag */
+.visit-status {
+  font-weight: bold;
+}
+
+.visit-status.visited {
+  background-color: #dfffdf;
+  color: #22863a;
+  border: 1px solid #22863a;
+}
+
+.visit-status.not-visited {
+  background-color: #fff0eb;
+  color: #d73a49;
+  border: 1px solid #d73a49;
+}

@@ -16,6 +16,12 @@ const Dashboard = () => {
   const [dateFilter, setDateFilter] = useState('today');
   // API URL
   const API_URL = 'http://localhost:8081/api';
+  
+  // Add state variables to control expanded views
+  const [showAllPatients, setShowAllPatients] = useState(false);
+  const [showAllBills, setShowAllBills] = useState(false);
+  const [allPatients, setAllPatients] = useState([]);
+  const [allBills, setAllBills] = useState([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -103,9 +109,12 @@ const Dashboard = () => {
           (a, b) => new Date(b.recentActivity.date) - new Date(a.recentActivity.date)
         );
         
-        // Get the 4 most recently active patients
+        // Get the 4 most recently active patients for the summary
         const recentlyActivePatients = sortedByActivity.slice(0, 4);
         setRecentPatients(recentlyActivePatients);
+        
+        // Store all patients for the expanded view
+        setAllPatients(sortedByActivity);
 
         // Fetch bills data
         const billsResponse = await axios.get(`${API_URL}/bills`);
@@ -121,10 +130,12 @@ const Dashboard = () => {
           .filter(bill => bill.status === 'Paid')
           .reduce((sum, bill) => sum + (bill.amount || 0), 0);
 
-        // Get recent bills
+        // Sort bills by date
         const sortedBills = [...billsData].sort(
           (a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date)
         );
+        
+        // Get recent bills for summary
         const latestBills = sortedBills.slice(0, 3).map(bill => ({
           id: bill._id,
           patient: bill.patientName,
@@ -133,11 +144,20 @@ const Dashboard = () => {
         }));
         
         setRecentBills(latestBills);
+        
+        // Store all bills for expanded view
+        setAllBills(sortedBills.map(bill => ({
+          id: bill._id,
+          patient: bill.patientName,
+          amount: bill.amount,
+          status: bill.status,
+          date: bill.createdAt || bill.date
+        })));
 
-        // Update all stats at once
+        // Update stats
         setStats({
           totalPatients,
-          todayPatients,
+          todayPatients: uniqueTodayPatientIds.size,
           pendingBills,
           totalRevenue
         });
@@ -163,6 +183,19 @@ const Dashboard = () => {
 
     fetchDashboardData();
   }, []);
+
+  // Toggle functions for the expanded views
+  const toggleAllPatients = () => {
+    setShowAllPatients(!showAllPatients);
+    // Close bills view if open
+    if (showAllBills) setShowAllBills(false);
+  };
+  
+  const toggleAllBills = () => {
+    setShowAllBills(!showAllBills);
+    // Close patients view if open
+    if (showAllPatients) setShowAllPatients(false);
+  };
 
   // Helper function to format activity type for display
   const formatActivityType = (activity) => {
@@ -236,57 +269,115 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="dashboard-content">
-            <div className="recent-activity">
-              <div className="section-header">
-                <h3>Recent Patient Activity</h3>
-                <button className="view-all">View All</button>
+          {/* Show expanded view or regular dashboard content */}
+          {showAllPatients ? (
+            <div className="expanded-view">
+              <div className="expanded-header">
+                <h2>All Patients</h2>
+                <button className="back-button" onClick={toggleAllPatients}>Back to Dashboard</button>
               </div>
-              <div className="activity-list">
-                {recentPatients.length > 0 ? (
-                  recentPatients.map((patient, index) => (
-                    <div key={patient._id || `patient-${index}`} className="activity-item">
-                      <div className={`activity-icon patient ${patient.recentActivity.type}`}>
-                        {patient.recentActivity.type === 'visit' ? '🩺' : 
-                         patient.recentActivity.type === 'appointment' ? '📅' : '👤'}
-                      </div>
-                      <div className="activity-content">
-                        <h4>{patient.name}</h4>
-                        <p>{formatActivityType(patient.recentActivity)}</p>
-                        <small>{patient.gender} {patient.age ? `| Age: ${patient.age}` : ''}</small>
-                      </div>
+              <div className="patients-full-list">
+                {allPatients.map((patient, index) => (
+                  <div key={patient._id || `patient-${index}`} className="patient-list-item">
+                    <div className={`activity-icon patient ${patient.recentActivity.type}`}>
+                      {patient.recentActivity.type === 'visit' ? '🩺' : 
+                       patient.recentActivity.type === 'appointment' ? '📅' : '👤'}
                     </div>
-                  ))
-                ) : (
-                  <div className="no-data">No recent patients</div>
-                )}
+                    <div className="patient-full-info">
+                      <h4>{patient.name}</h4>
+                      <div className="patient-details-row">
+                        <span>{patient.gender}</span>
+                        {patient.age && <span> | Age: {patient.age}</span>}
+                        {patient.phone && <span> | Phone: {patient.phone}</span>}
+                      </div>
+                      <p className="activity-info">{formatActivityType(patient.recentActivity)}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+          ) : showAllBills ? (
+            <div className="expanded-view">
+              <div className="expanded-header">
+                <h2>All Bills</h2>
+                <button className="back-button" onClick={toggleAllBills}>Back to Dashboard</button>
+              </div>
+              <div className="bills-full-list">
+                <table className="bills-table">
+                  <thead>
+                    <tr>
+                      <th>Patient</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allBills.map(bill => (
+                      <tr key={bill.id} className="bill-list-item">
+                        <td>{bill.patient}</td>
+                        <td>₹{bill.amount.toFixed(2)}</td>
+                        <td><span className={`status ${bill.status.toLowerCase()}`}>{bill.status}</span></td>
+                        <td>{new Date(bill.date).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="dashboard-content">
+              <div className="recent-activity">
+                <div className="section-header">
+                  <h3>Recent Patient Activity</h3>
+                  <button className="view-all" onClick={toggleAllPatients}>View All</button>
+                </div>
+                <div className="activity-list">
+                  {recentPatients.length > 0 ? (
+                    recentPatients.map((patient, index) => (
+                      <div key={patient._id || `patient-${index}`} className="activity-item">
+                        <div className={`activity-icon patient ${patient.recentActivity.type}`}>
+                          {patient.recentActivity.type === 'visit' ? '🩺' : 
+                           patient.recentActivity.type === 'appointment' ? '📅' : '👤'}
+                        </div>
+                        <div className="activity-content">
+                          <h4>{patient.name}</h4>
+                          <p>{formatActivityType(patient.recentActivity)}</p>
+                          <small>{patient.gender} {patient.age ? `| Age: ${patient.age}` : ''}</small>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-data">No recent patients</div>
+                  )}
+                </div>
+              </div>
 
-            <div className="recent-bills">
-              <div className="section-header">
-                <h3>Recent Bills</h3>
-                <button className="view-all">View All</button>
-              </div>
-              <div className="bills-list">
-                {recentBills.length > 0 ? (
-                  recentBills.map(bill => (
-                    <div key={bill.id} className="bill-item">
-                      <div className="bill-info">
-                        <h4>{bill.patient}</h4>
-                        <p>₹{bill.amount.toFixed(2)}</p>
+              <div className="recent-bills">
+                <div className="section-header">
+                  <h3>Recent Bills</h3>
+                  <button className="view-all" onClick={toggleAllBills}>View All</button>
+                </div>
+                <div className="bills-list">
+                  {recentBills.length > 0 ? (
+                    recentBills.map(bill => (
+                      <div key={bill.id} className="bill-item">
+                        <div className="bill-info">
+                          <h4>{bill.patient}</h4>
+                          <p>₹{bill.amount.toFixed(2)}</p>
+                        </div>
+                        <span className={`status ${bill.status.toLowerCase()}`}>
+                          {bill.status}
+                        </span>
                       </div>
-                      <span className={`status ${bill.status.toLowerCase()}`}>
-                        {bill.status}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="no-data">No recent bills</div>
-                )}
+                    ))
+                  ) : (
+                    <div className="no-data">No recent bills</div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </>
       )}
     </div>

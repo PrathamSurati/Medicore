@@ -892,3 +892,22 @@ html {
   font-weight: bold;
   font-size: 0.85em;
 }
+
+/* Visit status tag styling */
+.visit-status-tag {
+  margin-left: 5px;
+  font-weight: 500;
+}
+
+.visit-status-tag.visited {
+  color: #22863a;
+}
+
+.visit-status-tag.not-visited {
+  color: #d73a49;
+}
+
+/* Visited patient card styling */
+.patient-card.visited-patient {
+  border-left: 3px solid #22863a;
+}

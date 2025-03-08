@@ -62,11 +62,28 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
               }
             });
             
-            // Update patients with their appointments
-            return patientsCopy.map(patient => ({
-              ...patient,
-              appointments: appointmentsByPatient[patient._id] || []
-            }));
+            // Update patients with their appointments and visit status
+            return patientsCopy.map(patient => {
+              const patientAppointments = appointmentsByPatient[patient._id] || [];
+              
+              // Find today's appointment if it exists
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const tomorrow = new Date(today);
+              tomorrow.setDate(tomorrow.getDate() + 1);
+              
+              const todayAppointment = patientAppointments.find(appointment => {
+                const appointmentDate = new Date(appointment.startTime);
+                return appointmentDate >= today && appointmentDate < tomorrow;
+              });
+              
+              return {
+                ...patient,
+                appointments: patientAppointments,
+                todayAppointment: todayAppointment,
+                visitStatus: todayAppointment ? todayAppointment.visitStatus : null
+              };
+            });
           });
         }
 
@@ -90,11 +107,22 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
       const { patientId, date } = event.detail;
       
       setPatients(prevPatients => 
-        prevPatients.map(patient => 
-          patient._id === patientId 
-            ? { ...patient, isVisited: true, lastVisitDate: date || new Date().toISOString() }
-            : patient
-        )
+        prevPatients.map(patient => {
+          if (patient._id === patientId) {
+            // Update the patient's visit status when a report is saved
+            const updatedTodayAppointment = patient.todayAppointment ? 
+              { ...patient.todayAppointment, visitStatus: 'visited' } : null;
+            
+            return { 
+              ...patient, 
+              isVisited: true, 
+              lastVisitDate: date || new Date().toISOString(),
+              todayAppointment: updatedTodayAppointment,
+              visitStatus: 'visited'
+            };
+          }
+          return patient;
+        })
       );
     };
 
@@ -269,11 +297,11 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
     );
   };
   
-  // Update the today's patients filtering to sort first by visit status then by appointment time
+  // Update the today's patients filtering to prioritize non-visited patients
   const filteredTodayPatients = filterBySearchTerm(todayPatients).sort((a, b) => {
     // First sort by visit status (non-visited first)
-    if (a.isVisited !== b.isVisited) {
-      return a.isVisited ? 1 : -1; // non-visited patients come first
+    if ((a.visitStatus === 'visited') !== (b.visitStatus === 'visited')) {
+      return a.visitStatus === 'visited' ? 1 : -1; // non-visited patients come first
     }
     
     // Then sort by appointment time (ascending order)
@@ -454,8 +482,8 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
                       return (
                         <div 
                           key={patient._id} 
-                          className={`patient-card today-card ${patient.isVisited ? "visited-patient" : ""}`}
-                          onClick={() => handlePatientClick(patient._id, patient.isVisited)}
+                          className={`patient-card today-card ${patient.visitStatus === 'visited' ? "visited-patient" : ""}`}
+                          onClick={() => handlePatientClick(patient._id, patient.visitStatus === 'visited')}
                         >
                           <div className="patient-number">{index + 1}</div>
                           <div className="patient-info">
@@ -463,7 +491,11 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
                             <div className="patient-details">
                               {patient.age && <span>Age: {patient.age}</span>}
                               {patient.gender && <span> | {patient.gender}</span>}
-                              {patient.isVisited && <span className="visited-tag"> | Visited</span>}
+                              {patient.visitStatus && (
+                                <span className={`visit-status-tag ${patient.visitStatus}`}>
+                                  | {patient.visitStatus === 'visited' ? 'Visited' : 'Not Visited'}
+                                </span>
+                              )}
                             </div>
                             {latestAppointment && (
                               <div className="appointment-time">
