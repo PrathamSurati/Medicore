@@ -203,7 +203,6 @@ const PatientDetails = () => {
       return;
     }
 
-    // Send a POST request to your backend API to save the report data
     try {
       // Step 1: Save the report
       const response = await axios.post(
@@ -233,7 +232,7 @@ const PatientDetails = () => {
         
         // If there's an appointment for today, update its visit status
         if (todayAppointment) {
-          await axios.patch(
+          const updatedAppointment = await axios.patch(
             `http://localhost:8081/api/appointments/${todayAppointment._id}`,
             { 
               visitStatus: 'visited',
@@ -241,11 +240,37 @@ const PatientDetails = () => {
             }
           );
           console.log('Appointment visit status updated to visited');
+          
+          // Update the appointment in local state to reflect changes immediately
+          setAppointment(updatedAppointment.data);
         }
       } catch (appointmentError) {
         console.error('Error updating appointment visit status:', appointmentError);
       }
 
+      // Step 3: Refresh patient history to show the new record
+      try {
+        const historyResponse = await axios.get(
+          `http://localhost:8081/api/patients/${patientId}/history`
+        );
+        setPatientHistory(historyResponse.data || []);
+      } catch (historyError) {
+        console.error('Error refreshing patient history:', historyError);
+      }
+      
+      // Step 4: Refresh patient data to reflect any status changes
+      try {
+        const patientResponse = await axios.get(
+          `http://localhost:8081/api/patients/${patientId}`
+        );
+        setPatient(patientResponse.data);
+      } catch (patientError) {
+        console.error('Error refreshing patient data:', patientError);
+      }
+
+      // Reset form fields
+      resetFormFields();
+      
       alert("Report saved successfully!");
 
       // Dispatch custom event to notify sidebar about the saved report
@@ -261,6 +286,7 @@ const PatientDetails = () => {
       axios.get(`http://localhost:8081/api/prescriptions`).then((response) => {
         setTemplates(response.data || []);
       });
+      
     } catch (error) {
       console.error('Error saving report:', error);
       alert("Error saving report. Please try again.");
