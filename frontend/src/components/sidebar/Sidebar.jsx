@@ -1,15 +1,15 @@
 import { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import signoutButton from "../assets/images/signout_button.png";
-import addPatientIcon from "../assets/images/add.png";
-import addBillIcon from "../assets/images/bill.png";
-import patientsIcon from "../assets/images/patients.png";
-import reportsIcon from "../assets/images/reports.png";
-import settingsIcon from "../assets/images/settings.png";
-import leftArrow from "../assets/images/left_arrow.png";
-import rightArrow from "../assets/images/right_arrow.png";
-import searchIcon from "../assets/images/search.png";
-import saveIcon from "../assets/images/save.png";
+import signoutButton from "../../assets/images/signout_button.png";
+import addPatientIcon from "../../assets/images/add.png";
+import addBillIcon from "../../assets/images/bill.png";
+import patientsIcon from "../../assets/images/patients.png";
+import reportsIcon from "../../assets/images/reports.png";
+import settingsIcon from "../../assets/images/settings.png";
+import leftArrow from "../../assets/images/left_arrow.png";
+import rightArrow from "../../assets/images/right_arrow.png";
+import searchIcon from "../../assets/images/search.png";
+import saveIcon from "../../assets/images/save.png";
 import "./Sidebar.css";
 import PropTypes from "prop-types";
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import SideBar from './components/Sidebar';
+import SideBar from './components/sidebar/Sidebar';
 import Navbar from './components/Navbar/Navbar';
 import AddPatientModal from './components/New patient/AddPatient';
 import './App.css';
@@ -9,7 +9,7 @@ import Settings from './settings/Settings';
 import Dashboard from './Dashboard/Dashboard';
 import AddBills from './Billing/Components/AddBills';
 import Billing from "./Billing/Billing";
-import PatientDetails from './components/PatientDetails';
+import PatientDetails from './components/PatientDetails/PatientDetails';
 // Import admin routes
 // import AdminRoutes from './AdminRoutes';
 
