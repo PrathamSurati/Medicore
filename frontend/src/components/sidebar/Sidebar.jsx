@@ -524,8 +524,8 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
                       return (
                         <div 
                           key={patient._id} 
-                          className="patient-card upcoming-card"
-                          onClick={() => handlePatientClick(patient._id)}
+                          className={`patient-card upcoming-card ${patient.visitStatus === 'visited' || patient.isVisited ? "visited-patient" : ""}`}
+                          onClick={() => handlePatientClick(patient._id, (patient.visitStatus === 'visited' || patient.isVisited))}
                         >
                           <div className="patient-number">{index + 1}</div>
                           <div className="patient-info">
@@ -533,6 +533,11 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
                             <div className="patient-details">
                               {patient.age && <span>Age: {patient.age}</span>}
                               {patient.gender && <span> | {patient.gender}</span>}
+                              {(patient.visitStatus || patient.isVisited) && (
+                                <span className={`visit-status-tag ${patient.visitStatus === 'visited' || patient.isVisited ? 'visited' : 'not-visited'}`}>
+                                  | {patient.visitStatus === 'visited' || patient.isVisited ? 'Visited' : 'Not Visited'}
+                                </span>
+                              )}
                             </div>
                             {latestAppointment && (
                               <div className="appointment-date">
