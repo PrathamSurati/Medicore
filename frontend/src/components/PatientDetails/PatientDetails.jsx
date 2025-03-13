@@ -417,6 +417,28 @@ const PatientDetails = () => {
     // Get current date in readable format
     const currentDate = new Date().toLocaleDateString();
     
+    // Determine what data to use: selected record or current form data
+    const reportData = selectedRecord ? {
+      vitals: selectedRecord.vitals,
+      complaints: selectedRecord.complaints,
+      diagnosis: selectedRecord.diagnosis,
+      medicines: selectedRecord.medicines,
+      nextVisit: selectedRecord.nextVisit,
+      date: selectedRecord.date || currentDate
+    } : {
+      vitals,
+      complaints,
+      diagnosis,
+      medicines,
+      nextVisit: date,
+      date: currentDate
+    };
+    
+    // Format the report date for display
+    const reportDateDisplay = selectedRecord ? 
+      new Date(selectedRecord.date).toLocaleDateString() : 
+      currentDate;
+    
     // Prepare HTML content for printing
     let printContent = `
       <html>
@@ -433,13 +455,13 @@ const PatientDetails = () => {
             table { width: 100%; border-collapse: collapse; }
             table td { padding: 5px; }
             .vital-name { font-weight: bold; margin-right: 5px; }
+            .report-title { text-align: center; font-size: 24px; margin-bottom: 20px; }
+            .report-date { text-align: right; margin-bottom: 30px; }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>Medical Report</h1>
-            <div>Date: ${currentDate}</div>
-          </div>
+          <div class="report-title">Medical Report</div>
+          <div class="report-date">Date: ${reportDateDisplay}</div>
           
           <div class="patient-info">
             <h2>${patient.name}</h2>
@@ -452,14 +474,14 @@ const PatientDetails = () => {
     `;
     
     // Add vitals section if there are any values
-    if (vitals.some(v => v.value)) {
+    if (reportData.vitals && reportData.vitals.some(v => v.value)) {
       printContent += `
         <div class="section">
           <div class="section-title">Vitals:</div>
           <table>
       `;
       
-      vitals.forEach(vital => {
+      reportData.vitals.forEach(vital => {
         if (vital.value) {
           printContent += `
             <tr>
@@ -477,14 +499,14 @@ const PatientDetails = () => {
     }
     
     // Add complaints section if there are any
-    if (complaints.length > 0) {
+    if (reportData.complaints && reportData.complaints.length > 0) {
       printContent += `
         <div class="section">
           <div class="section-title">Complaints:</div>
           <ul>
       `;
       
-      complaints.forEach(complaint => {
+      reportData.complaints.forEach(complaint => {
         printContent += `<li>${complaint}</li>`;
       });
       
@@ -495,14 +517,14 @@ const PatientDetails = () => {
     }
     
     // Add diagnosis section if there are any
-    if (diagnosis.length > 0) {
+    if (reportData.diagnosis && reportData.diagnosis.length > 0) {
       printContent += `
         <div class="section">
           <div class="section-title">Diagnosis:</div>
           <ul>
       `;
       
-      diagnosis.forEach(item => {
+      reportData.diagnosis.forEach(item => {
         printContent += `<li>${item}</li>`;
       });
       
@@ -513,20 +535,21 @@ const PatientDetails = () => {
     }
     
     // Add medicines section if there are any
-    if (medicines.length > 0) {
+    if (reportData.medicines && reportData.medicines.length > 0) {
       printContent += `
         <div class="section">
           <div class="section-title">Medications:</div>
           <ul>
       `;
       
-      medicines.forEach(medicine => {
+      reportData.medicines.forEach(medicine => {
         printContent += `
           <li class="medicine-item">
-            <strong>${medicine.name}</strong>
-            ${medicine.dosage ? ` - ${medicine.dosage}` : ''}
-            ${medicine.frequency ? ` - ${medicine.frequency}` : ''}
+            <strong>${medicine.name || 'Unnamed medicine'}</strong>
+            ${medicine.when ? ` - ${medicine.when}` : ''}
             ${medicine.duration ? ` - for ${medicine.duration}` : ''}
+            ${medicine.Qty ? ` - Qty: ${medicine.Qty}` : ''}
+            ${medicine.Note ? `<br>Note: ${medicine.Note}` : ''}
           </li>
         `;
       });
@@ -538,11 +561,12 @@ const PatientDetails = () => {
     }
     
     // Add next visit date if available
-    if (date) {
+    if (reportData.nextVisit) {
+      const visitDate = new Date(reportData.nextVisit).toLocaleDateString();
       printContent += `
         <div class="section">
           <div class="section-title">Next Visit:</div>
-          <p>${new Date(date).toLocaleDateString()}</p>
+          <p>${visitDate}</p>
         </div>
       `;
     }
