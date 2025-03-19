@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getBillingData, updateBill, deleteBill } from '../../../services/BillingService';
-import BillForm from '../../../components/Billing/BillForm';
+import BillForm from '../../../components/Billing/EditBill/BillForm';
 import BillList from '../../../components/Billing/BillList-TableView/BillListTable'; // Make sure the import path is correct
 import './Billing.css';
 import PaymentForm from '../../../components/Billing/PaymentForm/PaymentForm';
