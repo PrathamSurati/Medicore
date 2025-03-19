@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import './BillList.css';
+import './BillListTable.css';
 
 const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
   const [sortConfig, setSortConfig] = useState({

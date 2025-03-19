@@ -15,11 +15,11 @@ import TimelineOppositeContent, {
 } from '@mui/lab/TimelineOppositeContent';
 
 // Import report components
-import ComplaintsComponent from "../Report/Complaints/Complains";
-import DiagnosisComponent from "../Report/Diagnosis/Diagnosis";
-import MedicinesComponent from "../Report/Medicines/Medicines";
-import NextVisitComponent from "../Report/NextVisit/NextVisit";
-import VitalsComponent from "../Report/Vitals/Vitals";
+import ComplaintsComponent from "../../components/Report/Complaints/Complains";
+import DiagnosisComponent from "../../components/Report/Diagnosis/Diagnosis";
+import MedicinesComponent from "../../components/Report/Medicines/Medicines";
+import NextVisitComponent from "../../components/Report/NextVisit/NextVisit";
+import VitalsComponent from "../../components/Report/Vitals/Vitals";
 // import TitleComponent from './Report/Title/Title';
 
 // Default initial values for form fields

@@ -7,10 +7,10 @@ import './App.css';
 import ReportGenerator from './components/Report/ReportGenerator';
 import Settings from './pages/settings/Settings';
 import Dashboard from './pages/Dashboard/Dashboard';
-import AddBills from './Billing/Components/AddBills';
-import Billing from "./Billing/Billing";
-import PatientDetails from './components/PatientDetails/PatientDetails';
-import AppointmentManager from "./components/appointments/AppointmentManager";
+import AddBills from './pages/Billing/AddBills';
+import Billing from "./pages/Billing/BillingDashboard/Billing";
+import PatientDetails from './pages/PatientDetails/PatientDetails';
+import AppointmentManager from "./pages/appointments/AppointmentManager";
 // Import admin routes
 // import AdminRoutes from './AdminRoutes';
 

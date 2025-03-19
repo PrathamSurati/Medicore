@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import medicineData from "../../utils/json/medicine.json";
+import medicineData from "../../../utils/json/medicine.json";
 import "./AddBill.css";
 
 const AddBill = ({ patients, onAddBill, onCancel }) => {

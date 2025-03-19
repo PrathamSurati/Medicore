@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import AddBill from './AddBill';
-import { createBill } from '../BillingService';
+import AddBill from '../../components/Billing/AddNewBill/AddBill';
+import { createBill } from '../../services/BillingService';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 

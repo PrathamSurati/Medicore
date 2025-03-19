@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getBillingData, updateBill, deleteBill } from './BillingService';
-import BillForm from './BillForm';
-import BillList from './Components/BillList'; // Make sure the import path is correct
+import { getBillingData, updateBill, deleteBill } from '../../../services/BillingService';
+import BillForm from '../../../components/Billing/BillForm';
+import BillList from '../../../components/Billing/BillList-TableView/BillListTable'; // Make sure the import path is correct
 import './Billing.css';
-import PaymentForm from './Components/PaymentForm';
+import PaymentForm from '../../../components/Billing/PaymentForm/PaymentForm';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Add this import
 
