@@ -5,6 +5,14 @@ import { handleError, handleSuccess } from "../../../utils";
 import { useNavigate } from "react-router-dom";
 import './AddPatient.css'; 
 
+// Updated dummy doctor data with MongoDB-compatible ObjectId strings
+const dummyDoctors = [
+  { id: "507f1f77bcf86cd799439011", name: "Dr. Sharma", specialization: "General Medicine" },
+  { id: "507f1f77bcf86cd799439012", name: "Dr. Patel", specialization: "Cardiology" },
+  { id: "507f1f77bcf86cd799439013", name: "Dr. Singh", specialization: "Pediatrics" },
+  { id: "507f1f77bcf86cd799439014", name: "Dr. Gupta", specialization: "Orthopedics" }
+];
+
 const AddPatientModal = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('new'); // 'new' or 'existing'
   const [formData, setFormData] = useState({
@@ -16,6 +24,8 @@ const AddPatientModal = ({ isOpen, onClose }) => {
     city: "",
     address: "",
     pin: "",
+    payableAmount: 300, // Default payable amount for new patients
+    paymentOption: "fileOnly" // Default payment option
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -23,6 +33,10 @@ const AddPatientModal = ({ isOpen, onClose }) => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
+  
+  // Separate doctor selection states for new and existing patients
+  const [newPatientDoctor, setNewPatientDoctor] = useState(null);
+  const [existingPatientDoctor, setExistingPatientDoctor] = useState(null);
 
   const navigate = useNavigate();
 
@@ -38,12 +52,16 @@ const AddPatientModal = ({ isOpen, onClose }) => {
         city: "",
         address: "",
         pin: "",
+        payableAmount: 300, // Default value
+        paymentOption: "fileOnly" // Default payment option
       });
       setSearchTerm('');
       setSearchResults([]);
       setSelectedPatient(null);
       setAppointmentDate('');
       setAppointmentTime('');
+      setNewPatientDoctor(null);
+      setExistingPatientDoctor(null);
       setActiveTab('new');
     }
   }, [isOpen]);
@@ -103,7 +121,18 @@ const AddPatientModal = ({ isOpen, onClose }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    
+    // Special handling for payment option selection
+    if (name === "paymentOption") {
+      const payableAmount = value === "fileOnly" ? 300 : 500;
+      setFormData({ 
+        ...formData, 
+        [name]: value,
+        payableAmount: payableAmount
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSearchChange = (e) => {
@@ -121,11 +150,16 @@ const AddPatientModal = ({ isOpen, onClose }) => {
     if (activeTab === 'new') {
       // Handle new patient submission
       const {
-        name, phone, gender, age, dob, city, address, pin
+        name, phone, gender, age, dob, city, address, pin, payableAmount
       } = formData;
 
       if (!name || !phone || !gender || !age || !dob || !city || !address || !pin) {
         return handleError("All fields are required!");
+      }
+
+      // If appointment date is provided, require doctor selection
+      if (appointmentDate && !newPatientDoctor) {
+        return handleError("Please select a doctor for the appointment");
       }
 
       try {
@@ -170,7 +204,7 @@ const AddPatientModal = ({ isOpen, onClose }) => {
           
           // If appointment date is provided, schedule an appointment
           if (appointmentDate) {
-            await scheduleAppointment(patient._id);
+            await scheduleAppointment(patient._id, true);
           } else {
             setTimeout(() => {
               navigate(`/patients/${patient._id}`);
@@ -195,12 +229,16 @@ const AddPatientModal = ({ isOpen, onClose }) => {
       if (!appointmentDate || !appointmentTime) {
         return handleError("Appointment date and time are required");
       }
+
+      if (!existingPatientDoctor) {
+        return handleError("Please select a doctor for the appointment");
+      }
       
-      await scheduleAppointment(selectedPatient._id);
+      await scheduleAppointment(selectedPatient._id, false);
     }
   };
 
-  const scheduleAppointment = async (patientId) => {
+  const scheduleAppointment = async (patientId, isNewPatient) => {
     if (!appointmentDate) {
       return handleError("Appointment date is required");
     }
@@ -217,6 +255,13 @@ const AddPatientModal = ({ isOpen, onClose }) => {
       const startTime = new Date(appointmentDateTime);
       const endTime = new Date(startTime.getTime() + 30 * 60000);
       
+      // Choose the correct doctor based on which tab is active
+      const doctor = isNewPatient ? newPatientDoctor : existingPatientDoctor;
+      
+      if (!doctor) {
+        return handleError("Please select a doctor for the appointment");
+      }
+      
       const appointmentData = {
         patientId,
         // Include patient name from state if this is an existing patient
@@ -225,7 +270,13 @@ const AddPatientModal = ({ isOpen, onClose }) => {
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
         type: 'New Visit',
-        status: 'Scheduled'
+        status: 'Scheduled',
+        // Add doctor information with proper ObjectId formatting
+        doctorId: doctor.id, // Now using string ID (compatible with MongoDB ObjectId)
+        doctorName: doctor.name,
+        doctorSpecialization: doctor.specialization,
+        // Include payable amount
+        payableAmount: formData.payableAmount
       };
       
       console.log('Sending appointment data:', appointmentData);
@@ -418,10 +469,96 @@ const AddPatientModal = ({ isOpen, onClose }) => {
                 required
               />
             </div>
+            
+            <div className="form-group payment-options">
+              <label>Payment Option *</label>
+              <div className="radio-group payment-radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    name="paymentOption"
+                    value="fileOnly"
+                    checked={formData.paymentOption === "fileOnly"}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  File Charges Only (₹300)
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="paymentOption"
+                    value="fileAndCase"
+                    checked={formData.paymentOption === "fileAndCase"}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  File + Doctor Case (₹500)
+                </label>
+              </div>
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="payableAmount">Payable Amount (₹) *</label>
+              <input
+                type="number"
+                id="payableAmount"
+                name="payableAmount"
+                value={formData.payableAmount}
+                onChange={handleInputChange}
+                required
+                readOnly
+              />
+              <small className="fee-breakdown">
+                {formData.paymentOption === "fileAndCase" ? 
+                  "Breakdown: File Charges (₹300) + Doctor Case (₹200)" : 
+                  "File registration charges"
+                }
+              </small>
+            </div>
 
             {/* Appointment Scheduling Section */}
             <div className="appointment-section">
               <h3>Schedule Appointment</h3>
+              
+              <div className="form-group">
+                <label htmlFor="newPatientDoctor">Select Doctor</label>
+                <select 
+                  id="newPatientDoctor" 
+                  className="doctor-select"
+                  value={newPatientDoctor ? newPatientDoctor.id : ""}
+                  onChange={(e) => {
+                    const doctorId = e.target.value;
+                    const doctor = dummyDoctors.find(d => d.id === doctorId);
+                    setNewPatientDoctor(doctor);
+                    
+                    // If doctor is selected and file+case option is not already selected,
+                    // automatically select file+case and update payment
+                    if (doctor && formData.paymentOption !== "fileAndCase") {
+                      setFormData({
+                        ...formData,
+                        paymentOption: "fileAndCase",
+                        payableAmount: 500
+                      });
+                    }
+                  }}
+                  required={formData.paymentOption === "fileAndCase" || appointmentDate}
+                >
+                  <option value="">-- Select a doctor --</option>
+                  {dummyDoctors.map(doctor => (
+                    <option key={doctor.id} value={doctor.id}>
+                      {doctor.name} - {doctor.specialization}
+                    </option>
+                  ))}
+                </select>
+                {formData.paymentOption === "fileAndCase" && !newPatientDoctor && (
+                  <p className="error-hint">Doctor selection is required for case registration</p>
+                )}
+                <div className="objectid-warning">
+                  Using MongoDB compatible doctor IDs to prevent ObjectId casting errors
+                </div>
+              </div>
+              
               <div className="appointment-row">
                 <div className="form-group">
                   <label htmlFor="appointmentDate">Appointment Date</label>
@@ -444,6 +581,14 @@ const AddPatientModal = ({ isOpen, onClose }) => {
                   />
                 </div>
               </div>
+
+              {appointmentDate && (
+                <div className="form-group">
+                  <p className="fee-note">
+                    <strong>Note:</strong> Doctor selection is required when scheduling an appointment
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="form-actions">
@@ -529,6 +674,32 @@ const AddPatientModal = ({ isOpen, onClose }) => {
                 {/* Appointment form for existing patient */}
                 <form onSubmit={handleSubmit} className="appointment-form">
                   <h3>Schedule Appointment</h3>
+                  
+                  <div className="form-group">
+                    <label htmlFor="existingPatientDoctor">Select Doctor *</label>
+                    <select 
+                      id="existingPatientDoctor" 
+                      className="doctor-select"
+                      value={existingPatientDoctor ? existingPatientDoctor.id : ""}
+                      onChange={(e) => {
+                        const doctorId = e.target.value;
+                        const doctor = dummyDoctors.find(d => d.id === doctorId);
+                        setExistingPatientDoctor(doctor);
+                      }}
+                      required
+                    >
+                      <option value="">-- Select a doctor --</option>
+                      {dummyDoctors.map(doctor => (
+                        <option key={doctor.id} value={doctor.id}>
+                          {doctor.name} - {doctor.specialization}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="objectid-warning">
+                      Using MongoDB compatible doctor IDs to prevent ObjectId casting errors
+                    </div>
+                  </div>
+                  
                   <div className="appointment-row">
                     <div className="form-group">
                       <label htmlFor="existingAppointmentDate">Appointment Date *</label>
@@ -552,6 +723,11 @@ const AddPatientModal = ({ isOpen, onClose }) => {
                         required
                       />
                     </div>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Payable Amount: ₹200</label>
+                    <p className="fee-note">Standard consultation fee for existing patients</p>
                   </div>
                   
                   <div className="form-actions">

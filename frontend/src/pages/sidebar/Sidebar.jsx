@@ -1,15 +1,34 @@
 import { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import signoutButton from "../../assets/images/signout_button.png";
-import addPatientIcon from "../../assets/images/add.png";
-import addBillIcon from "../../assets/images/bill.png";
-import patientsIcon from "../../assets/images/patients.png";
-import reportsIcon from "../../assets/images/reports.png";
-import settingsIcon from "../../assets/images/settings.png";
-import leftArrow from "../../assets/images/left_arrow.png";
-import rightArrow from "../../assets/images/right_arrow.png";
-import searchIcon from "../../assets/images/search.png";
-import saveIcon from "../../assets/images/save.png";
+// Remove image imports
+// import signoutButton from "../../assets/images/signout_button.png";
+// import addPatientIcon from "../../assets/images/add.png";
+// import addBillIcon from "../../assets/images/bill.png";
+// import patientsIcon from "../../assets/images/patients.png";
+// import reportsIcon from "../../assets/images/reports.png";
+// import settingsIcon from "../../assets/images/settings.png";
+// import leftArrow from "../../assets/images/left_arrow.png";
+// import rightArrow from "../../assets/images/right_arrow.png";
+// import searchIcon from "../../assets/images/search.png";
+// import saveIcon from "../../assets/images/save.png";
+// import calendarIcon from "../../assets/images/patients.png";
+
+// Add React Icons imports
+import { 
+  FaUserPlus, 
+  FaFileInvoiceDollar, 
+  FaUsers, 
+  FaCalendarAlt,
+  FaChartBar, 
+  FaSave, 
+  FaCog, 
+  FaChevronLeft, 
+  FaChevronRight, 
+  FaSearch, 
+  FaSignOutAlt,
+  FaUserMd
+} from "react-icons/fa";
+
 import "./Sidebar.css";
 import PropTypes from "prop-types";
 
@@ -21,6 +40,9 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [visitedFilter, setVisitedFilter] = useState("all"); // 'all', 'today', 'upcoming', 'visited'
   const [error, setError] = useState(null);
+  const [appointmentFilter, setAppointmentFilter] = useState("all"); // 'all', 'today', 'upcoming', 'past'
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [calendarView, setCalendarView] = useState("month"); // 'day', 'week', 'month'
 
   useEffect(() => {
     // Fetch initial data
@@ -222,13 +244,15 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
     }
   };
 
+  // Update menu items with React Icons
   const menuItems = [
-    { id: "Add patient", label: "Add patient", icon: addPatientIcon },
-    { id: "AddBills", label: "Add Bills", icon: addBillIcon },
-    { id: "appointments", label: "Appointments", icon: patientsIcon }, // Changed label to "Appointments" 
-    { id: "reports", label: "Reports", icon: reportsIcon },
-    { id: "saveTemplate", label: "Save Template", icon: saveIcon }, 
-    { id: "settings", label: "Settings", icon: settingsIcon },
+    { id: "Add patient", label: "Add patient", icon: <FaUserPlus /> },
+    { id: "AddBills", label: "Add Bills", icon: <FaFileInvoiceDollar /> },
+    { id: "appointments", label: "Appointments", icon: <FaUsers /> },
+    { id: "manageAppointments", label: "Manage Appointments", icon: <FaCalendarAlt /> },
+    { id: "reports", label: "Reports", icon: <FaChartBar /> },
+    { id: "saveTemplate", label: "Save Template", icon: <FaSave /> },
+    { id: "settings", label: "Settings", icon: <FaCog /> },
   ];
 
   const handleSearch = useCallback((e) => {
@@ -340,27 +364,116 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
     setIsCollapsed(!isCollapsed);
   };
 
+  // Function to format appointment time range
+  const formatAppointmentTimeRange = (startTime, endTime) => {
+    if (!startTime) return "Not scheduled";
+    const start = new Date(startTime);
+    const startStr = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    if (!endTime) return startStr;
+    const end = new Date(endTime);
+    const endStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    return `${startStr} - ${endStr}`;
+  };
+
+  // Function to update appointment status
+  const handleUpdateAppointmentStatus = async (appointmentId, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:8081/api/appointments/${appointmentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ visitStatus: newStatus }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update appointment');
+      
+      // Update local state
+      setAppointments(prevAppointments => 
+        prevAppointments.map(apt => 
+          apt._id === appointmentId ? { ...apt, visitStatus: newStatus } : apt
+        )
+      );
+      
+      // Update patient's visit status if this is their appointment
+      const updatedAppointment = appointments.find(apt => apt._id === appointmentId);
+      if (updatedAppointment && updatedAppointment.patientId) {
+        setPatients(prevPatients => 
+          prevPatients.map(patient => {
+            if (patient._id === updatedAppointment.patientId) {
+              const todayApt = patient.todayAppointment && 
+                patient.todayAppointment._id === appointmentId ? 
+                { ...patient.todayAppointment, visitStatus: newStatus } : 
+                patient.todayAppointment;
+                
+              return {
+                ...patient,
+                todayAppointment: todayApt,
+                visitStatus: patient._id === updatedAppointment.patientId ? newStatus : patient.visitStatus,
+                isVisited: newStatus === 'visited' ? true : patient.isVisited
+              };
+            }
+            return patient;
+          })
+        );
+      }
+    } catch (err) {
+      console.error("Error updating appointment status:", err);
+      setError(err.message);
+    }
+  };
+
+  // Group appointments by their status
+  const todayAppointments = appointments.filter(apt => 
+    getAppointmentStatus(apt) === 'today'
+  );
+  
+  const upcomingAppointments = appointments.filter(apt => 
+    getAppointmentStatus(apt) === 'upcoming'
+  );
+  
+  const pastAppointments = appointments.filter(apt => 
+    getAppointmentStatus(apt) === 'past'
+  );
+  
+  // Filter appointments based on search term
+  const filterAppointmentsBySearchTerm = (appointmentsList) => {
+    if (!searchTerm) return appointmentsList;
+    
+    return appointmentsList.filter(apt => {
+      // Find the patient for this appointment
+      const patient = patients.find(p => p._id === apt.patientId);
+      const patientName = patient ? patient.name.toLowerCase() : '';
+      
+      // Search in appointment details and patient name
+      return patientName.includes(searchTerm.toLowerCase()) || 
+             (apt.title && apt.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+             (apt.notes && apt.notes.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
+  };
+  
+  const filteredTodayAppointments = filterAppointmentsBySearchTerm(todayAppointments);
+  const filteredUpcomingAppointments = filterAppointmentsBySearchTerm(upcomingAppointments);
+  const filteredPastAppointments = filterAppointmentsBySearchTerm(pastAppointments);
+
   return (
     <>
       <div className={`primary-sidebar ${isCollapsed ? "collapsed" : ""}`}>
-        {/* ...existing sidebar header and search... */}
         <div className="upperContent">
           <div className="sidebar-header">
             <h1 className="app-title">
               {isCollapsed ? "" : "Report generator"}
             </h1>
             <button className="collapse-button" onClick={handleToggleSidebar}>
-              <img
-                src={isCollapsed ? rightArrow : leftArrow}
-                alt="arrows"
-                style={{ height: "30px", width: "25px" }}
-              />
+              {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
             </button>
           </div>
 
           <div className="search-container">
             {isCollapsed ? (
-              <img src={searchIcon} alt="Search" className="search-icon" />
+              <FaSearch className="search-icon" />
             ) : (
               <input
                 type="text"
@@ -383,17 +496,15 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
                   setActiveSection(item.id);
                   if (item.id === "Add patient") {
                     onAddClick();
+                  } else if (item.id === "manageAppointments") {
+                    // Navigate to the standalone appointment manager component
+                    navigate("/manage-appointments");
                   }
                 }}
                 title={isCollapsed ? item.label : ""}
               >
-                <Link to={`/${item.id}`} className="menu-link">
-                  <img 
-                    src={item.icon} 
-                    alt={item.label} 
-                    className="menu-icon" 
-                    style={item.id === "saveTemplate" ? { height: "25px", width: "25px" } : {}}
-                  />
+                <Link to={item.id === "manageAppointments" ? "/manage-appointments" : `/${item.id}`} className="menu-link">
+                  <span className="menu-icon">{item.icon}</span>
                   {!isCollapsed && (
                     <span className="menu-label">{item.label}</span>
                   )}
@@ -403,10 +514,9 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
           </ul>
         </div>
 
-        {/* ...existing profile section... */}
         <div className="profile-signout-container">
           <div className={`user-profile ${isCollapsed ? "collapsed" : ""}`}>
-            <div className="avatar">👨‍⚕️</div>
+            <div className="avatar"><FaUserMd /></div>
             <div className="user-info">
               <strong>Dr. Smit</strong>
               <small>Cardiologist</small>
@@ -414,14 +524,7 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
           </div>
           <button className="signout-button" title="Sign Out">
             <div className="signout-icon">
-              <img
-                src={signoutButton}
-                alt="Sign out"
-                style={{
-                  height: "20px",
-                  width: "20px",
-                }}
-              />
+              <FaSignOutAlt />
             </div>
           </button>
         </div>
@@ -621,6 +724,8 @@ const Sidebar = ({ onAddClick, activeSection, setActiveSection, navigate }) => {
           </div>
         </aside>
       )}
+
+      {/* ...existing saveTemplate section... */}
     </>
   );
 };

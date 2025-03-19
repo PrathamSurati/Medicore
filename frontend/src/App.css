@@ -14,22 +14,6 @@ body, html {
   overflow: hidden; /* Contain everything within app layout */
 }
 
-.navbar {
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 3;
-}
-
-.primary-sidebar {
-  height: calc(100% - 60px); /* Adjust for the height of the navbar */
-  position:fixed;
-  top: 60px; /* Adjust for the height of the navbar */
-  left: 0;
-  z-index: 2;
-}
-
 .app-content {
   flex: 1;
   height: calc(100vh - 60px);

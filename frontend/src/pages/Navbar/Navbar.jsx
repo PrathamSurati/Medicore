@@ -1,4 +1,4 @@
-import { IoMdAddCircleOutline } from "react-icons/io";
+import { FaPlus } from "react-icons/fa"; // Replace IoMdAddCircleOutline with FaPlus
 import { NavLink } from 'react-router-dom';
 import './Navbar.css';
 import logo from "../../assets/images/logo.png"
@@ -16,7 +16,7 @@ const Navbar = ({ onAddClick, resetActiveSection }) => {
         <span className="brand-name">Med Reports</span>
       </NavLink>
       <div>
-        <IoMdAddCircleOutline className="Add_icon" onClick={onAddClick} />
+        <FaPlus className="Add_icon" onClick={onAddClick} /> {/* Replace IoMdAddCircleOutline with FaPlus */}
       </div>
     </nav>
   );
