@@ -45,6 +45,9 @@ const PatientDetails = () => {
   const [recordLoading, setRecordLoading] = useState(false);
   const [recordError, setRecordError] = useState(null);
   const [appointment, setAppointment] = useState(null);
+  const [billGenerated, setBillGenerated] = useState(false);
+  const [billGenerating, setBillGenerating] = useState(false);
+  const [billError, setBillError] = useState(null);
 
   const [vitals, setVitals] = useState(defaultVitals);
   const [diagnosis, setDiagnosis] = useState([]);
@@ -179,6 +182,53 @@ const PatientDetails = () => {
     };
   }, []);
 
+  // Function to generate bill based on the medicines prescribed
+  const generateBillForPatient = async (reportData) => {
+    if (!reportData.medicines || reportData.medicines.length === 0) {
+      console.log('No medicines to generate bill for');
+      return null;
+    }
+
+    setBillGenerating(true);
+    setBillError(null);
+    setBillGenerated(false);
+
+    try {
+      console.log('Generating bill for report:', reportData._id);
+      // Create bill data object
+      const billData = {
+        patientId: patientId,
+        patientName: patient.name,
+        medicines: reportData.medicines,
+        date: new Date(),
+        consultationFee: 500, // Default consultation fee - could be made configurable
+        reportId: reportData._id // Link the bill to the report
+      };
+
+      console.log('Bill data to send:', billData);
+
+      // Call API to generate bill
+      const response = await axios.post(
+        'http://localhost:8081/api/bills/generate',
+        billData
+      );
+
+      console.log('Bill generated successfully:', response.data);
+      setBillGenerated(true);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error generating bill:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
+      setBillError('Failed to generate bill. Please try again or generate it manually.');
+      return null;
+    } finally {
+      setBillGenerating(false);
+    }
+  };
+
   const handleSaveReport = async () => {
     // Create a template name if none provided
     const templateTitle =
@@ -211,7 +261,23 @@ const PatientDetails = () => {
       );
       console.log('Report saved successfully:', response.data);
       
-      // Step 2: Find today's appointment for this patient and update visit status
+      // Step 2: Generate bill for the prescribed medicines
+      if (medicines.length > 0) {
+        const billResponse = await generateBillForPatient({
+          ...reportData,
+          _id: response.data._id // Pass the newly created report ID
+        });
+        
+        if (billResponse) {
+          alert("Patient report saved and bill generated successfully!");
+        } else {
+          alert("Report saved successfully, but there was an issue generating the bill.");
+        }
+      } else {
+        alert("Report saved successfully!");
+      }
+      
+      // Step 3: Find today's appointment for this patient and update visit status
       try {
         // Get today's date range
         const today = new Date();
@@ -271,7 +337,11 @@ const PatientDetails = () => {
       // Reset form fields
       resetFormFields();
       
-      alert("Report saved successfully!");
+      if (!billGenerated && medicines.length > 0) {
+        alert("Report saved successfully! Bill has been generated.");
+      } else {
+        alert("Report saved successfully!");
+      }
 
       // Dispatch custom event to notify sidebar about the saved report
       const reportSavedEvent = new CustomEvent('reportSaved', {
@@ -666,6 +736,14 @@ const PatientDetails = () => {
             </div>
           )}
           <button className="action-button print-button" onClick={handlePrint}>Print</button>
+          {billGenerated && (
+            <button 
+              className="action-button view-bill-button" 
+              onClick={() => window.open(`/billing?patientId=${patientId}`, '_blank')}
+            >
+              View Bill
+            </button>
+          )}
         </div>
       </div>
 
@@ -945,6 +1023,18 @@ const PatientDetails = () => {
           )}
         </div>
       </div>
+      {/* Show bill generation status if applicable */}
+      {billGenerating && (
+        <div className="bill-generating-notice">
+          <p>Generating bill for prescribed medicines...</p>
+        </div>
+      )}
+      
+      {billError && (
+        <div className="bill-error-notice">
+          <p>{billError}</p>
+        </div>
+      )}
     </div>
   );
 };

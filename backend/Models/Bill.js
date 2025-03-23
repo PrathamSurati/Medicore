@@ -11,52 +11,35 @@ const BillSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  description: {
+  reportId: {
     type: String,
     required: true
   },
-  amount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  status: {
-    type: String,
-    enum: ['Pending', 'Paid', 'Overdue', 'Cancelled'],
-    default: 'Pending'
-  },
-  dueDate: {
-    type: Date,
-    required: true
-  },
-  createdDate: {
+  date: {
     type: Date,
     default: Date.now
   },
-  insurance: {
-    type: String,
-    trim: true
+  items: [
+    {
+      name: String,
+      quantity: Number,
+      unitPrice: Number,
+      totalPrice: Number
+    }
+  ],
+  consultationFee: {
+    type: Number,
+    default: 0
   },
-  paymentMethod: {
-    type: String,
-    trim: true
+  totalAmount: {
+    type: Number,
+    required: true
   },
-  paymentDate: {
-    type: Date
+  status: {
+    type: String,
+    enum: ['pending', 'paid', 'cancelled'],
+    default: 'pending'
   }
-});
-
-// Method to check if a bill is overdue
-BillSchema.methods.isOverdue = function() {
-  return this.status !== 'Paid' && new Date() > this.dueDate;
-};
-
-// Pre-save hook to update status to 'Overdue' if past due date
-BillSchema.pre('save', function(next) {
-  if (this.status !== 'Paid' && new Date() > this.dueDate) {
-    this.status = 'Overdue';
-  }
-  next();
 });
 
 module.exports = mongoose.model('Bill', BillSchema);

@@ -4,7 +4,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const AuthRouter = require("./Routes/AuthRouter");
 const Patient = require("./Models/Patient");
-const billRoutes = require("./routes/bills");
+// Fix the import path - it should point to billRoutes.js not bills
+const billRoutes = require("./routes/billRoutes");
 
 // Load environment variables
 dotenv.config();
