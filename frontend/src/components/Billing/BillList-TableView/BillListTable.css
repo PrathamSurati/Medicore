@@ -176,3 +176,13 @@
   font-size: 12px;
   display: inline-block;
 }
+
+.print-btn {
+  background-color: #e6f7ff;
+  color: #0066cc;
+  margin-right: 4px;
+}
+
+.print-btn:hover {
+  background-color: #bfdfff;
+}

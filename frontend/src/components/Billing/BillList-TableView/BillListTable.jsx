@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './BillListTable.css';
 
-const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
+const BillList = ({ bills, patients = [], onEdit, onDelete, onPay, onPrint }) => {
   const [sortConfig, setSortConfig] = useState({
     key: 'billDate',
     direction: 'desc'
@@ -174,6 +174,11 @@ const BillList = ({ bills, patients = [], onEdit, onDelete, onPay }) => {
                       </button>
                     </td>
                     <td className="actions-cell">
+                      {onPrint && (
+                        <button className="action-btn print-btn" onClick={() => onPrint(bill)}>
+                          Print
+                        </button>
+                      )}
                       {onEdit && (
                         <button className="action-btn view-btn" onClick={() => onEdit(bill)}>
                           Edit

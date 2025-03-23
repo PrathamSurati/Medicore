@@ -140,6 +140,145 @@ const Billing = () => {
     }
   };
 
+  // Handle print bill
+  const handlePrintBill = (bill) => {
+    // Create a print-friendly version of the bill
+    const printWindow = window.open('', '_blank');
+    
+    // Get formatted date strings
+    const billDate = bill.billDate ? new Date(bill.billDate).toLocaleDateString() : 'N/A';
+    const dueDate = bill.dueDate ? new Date(bill.dueDate).toLocaleDateString() : 'N/A';
+    
+    // Generate print content with bill details
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Bill Receipt - ${bill.billNumber || `BL-${bill._id?.substr(-6) || 'N/A'}`}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+              max-width: 800px;
+              margin: 0 auto;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 20px;
+              padding-bottom: 10px;
+              border-bottom: 2px solid #333;
+            }
+            .bill-info {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 20px;
+            }
+            .bill-info div {
+              flex: 1;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+            }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: left;
+            }
+            th {
+              background-color: #f2f2f2;
+            }
+            .summary {
+              margin-top: 30px;
+              text-align: right;
+            }
+            .total {
+              font-weight: bold;
+              font-size: 1.2em;
+              margin-top: 10px;
+            }
+            .footer {
+              margin-top: 50px;
+              text-align: center;
+              font-size: 0.9em;
+              color: #666;
+            }
+            @media print {
+              .no-print {
+                display: none;
+              }
+              button {
+                display: none;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h2>MEDICORE</h2>
+            <h3>Medical Bill</h3>
+          </div>
+          
+          <div class="bill-info">
+            <div>
+              <p><strong>Bill #:</strong> ${bill.billNumber || `BL-${bill._id?.substr(-6) || 'N/A'}`}</p>
+              <p><strong>Date:</strong> ${billDate}</p>
+              <p><strong>Due Date:</strong> ${dueDate}</p>
+            </div>
+            <div>
+              <p><strong>Patient:</strong> ${bill.patientName || 'N/A'}</p>
+              <p><strong>Status:</strong> ${bill.status || 'Pending'}</p>
+              <p><strong>Patient ID:</strong> ${bill.patientId || 'N/A'}</p>
+            </div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${bill.items ? bill.items.map(item => `
+                <tr>
+                  <td>${item.description || 'N/A'}</td>
+                  <td>${item.quantity || 1}</td>
+                  <td>₹${parseFloat(item.price).toFixed(2)}</td>
+                  <td>₹${parseFloat(item.quantity * item.price).toFixed(2)}</td>
+                </tr>
+              `).join('') : '<tr><td colspan="4">No items</td></tr>'}
+            </tbody>
+          </table>
+          
+          <div class="summary">
+            <p><strong>Subtotal:</strong> ₹${(bill.subtotal || 0).toFixed(2)}</p>
+            ${bill.discount ? `<p><strong>Discount:</strong> ₹${parseFloat(bill.discount).toFixed(2)}</p>` : ''}
+            ${bill.tax ? `<p><strong>Tax:</strong> ${parseFloat(bill.tax).toFixed(2)}%</p>` : ''}
+            <p class="total"><strong>Total Amount:</strong> ₹${(bill.totalAmount || bill.amount || 0).toFixed(2)}</p>
+          </div>
+          
+          ${bill.notes ? `<div><strong>Notes:</strong> ${bill.notes}</div>` : ''}
+          
+          <div class="footer">
+            <p>Thank you for choosing Medicore for your healthcare needs.</p>
+          </div>
+          
+          <div class="no-print" style="margin-top: 20px; text-align: center;">
+            <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">Print Bill</button>
+          </div>
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    // Optionally auto-print the document
+    // printWindow.print();
+  };
+
   return (
     <div className="billing-container">
       <div className="billing-header">
@@ -181,6 +320,7 @@ const Billing = () => {
           onEdit={handleViewBill} 
           onDelete={handleDeleteBill} 
           onPay={handlePayBill}
+          onPrint={handlePrintBill}
         />
       )}
 
