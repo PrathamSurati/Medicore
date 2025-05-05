@@ -128,17 +128,18 @@ const AppointmentManager = () => {
     const appointmentDate = new Date(appointment.startTime);
     const today = new Date();
     
-    // Set hours to 0 to compare just the date part
+    // Set time to midnight for date comparison
     const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const apptDate = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), appointmentDate.getDate());
     
     if (apptDate.getTime() === todayDate.getTime()) {
       return 'today';
-    } else if (appointmentDate > today) {
+    } else if (apptDate > todayDate) {
       return 'upcoming';
-    } else {
+    } else if (apptDate < todayDate) {
       return 'past';
     }
+    return 'unknown';
   };
 
   // Function to format appointment time range
@@ -201,16 +202,32 @@ const AppointmentManager = () => {
     }, 10);
   };
 
-  // Get appointments for a specific date
+  // Get appointments for a specific date and filter type
   const getAppointmentsForDate = (date) => {
     if (!date || !appointments.length) return [];
+    
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
     
     return appointments.filter(appointment => {
       if (!appointment.startTime) return false;
       const appointmentDate = new Date(appointment.startTime);
-      return appointmentDate.getDate() === date.getDate() && 
-             appointmentDate.getMonth() === date.getMonth() && 
-             appointmentDate.getFullYear() === date.getFullYear();
+      appointmentDate.setHours(0, 0, 0, 0);
+
+      if (appointmentFilter === 'all') {
+        // For 'all' filter, return appointments only for the selected date
+        return appointmentDate.getTime() === date.getTime();
+      } else if (appointmentFilter === 'today') {
+        // For 'today' filter, return today's appointments
+        return appointmentDate.getTime() === currentDate.getTime();
+      } else if (appointmentFilter === 'upcoming') {
+        // For 'upcoming' filter, return all future appointments
+        return appointmentDate.getTime() > currentDate.getTime();
+      } else if (appointmentFilter === 'past') {
+        // For 'past' filter, return all past appointments
+        return appointmentDate.getTime() < currentDate.getTime();
+      }
+      return false;
     });
   };
 

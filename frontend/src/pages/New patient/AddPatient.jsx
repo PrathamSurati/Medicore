@@ -150,7 +150,7 @@ const AddPatientModal = ({ isOpen, onClose }) => {
     if (activeTab === 'new') {
       // Handle new patient submission
       const {
-        name, phone, gender, age, dob, city, address, pin, payableAmount
+        name, phone, gender, age, dob, city, address, pin
       } = formData;
 
       if (!name || !phone || !gender || !age || !dob || !city || !address || !pin) {
@@ -164,12 +164,24 @@ const AddPatientModal = ({ isOpen, onClose }) => {
 
       try {
         const url = "http://localhost:8081/api/newpatient";
+        // Only send the fields that are in the validation schema
+        const patientData = {
+          name,
+          phone,
+          gender,
+          age,
+          dob,
+          city,
+          address,
+          pin
+        };
+
         const response = await fetch(url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(patientData),
         });
 
         const result = await response.json();
